@@ -1,7 +1,7 @@
 Role Name
 =========
 
-A brief description of the role goes here.
+This role is to be used by any linux system that needs the official docker release installed. Currently it only supports Ubuntu but will ultimatly support Ubuntu/Debian and RHEL/Rocky variants.
 
 Requirements
 ------------
@@ -20,6 +20,12 @@ A list of other roles hosted on Galaxy should go here, plus any details in regar
 
 Example Playbook
 ----------------
+You can set the environment variable to use the WFHT Roles using the following:
+
+```bash
+cd roles
+export ANSIBLE_ROLES_PATH=`pwd`
+```
 
 Including an example of how to use your role (for instance, with variables passed in as parameters) is always nice for users too:
 
@@ -35,4 +41,4 @@ BSD
 Author Information
 ------------------
 
-An optional section for the role authors to include contact information, or a website (HTML is not allowed).
+Assistance can be obtain at http://workfromhometech.io.

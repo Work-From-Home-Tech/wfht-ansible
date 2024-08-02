@@ -1,2 +1,12 @@
 ---
 # vars file for install-docker
+prereqs:
+  - ca-certificates
+  - htop
+  - tmux
+dockerpackages:
+  - docker-ce
+  - docker-ce-cli
+  - containerd.io
+  - docker-buildx-plugin
+  - docker-compose-plugin
