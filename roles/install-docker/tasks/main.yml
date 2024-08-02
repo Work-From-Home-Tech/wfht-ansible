@@ -1,45 +1,63 @@
 ---
 # tasks file for install-docker
-#tasks:
-  - name: Get Linux Version Codename
-    shell: lsb_release -cs
-    register: VERSION_CODENAME
+- block:
+    - name: Install Docker
+      debug:
+        msg: "Starting Docker installation process"
 
-  - name: Register OS Architecture
-    shell: dpkg --print-architecture
-    register: ARCH
+    - name: Get Linux Version Codename
+      shell: lsb_release -cs
+      register: VERSION_CODENAME
 
-  - name: Add Docker GPG apt Key
-    apt_key:
-      url: https://download.docker.com/linux/ubuntu/gpg
-      state: present
+    - name: Register OS Architecture
+      shell: dpkg --print-architecture
+      register: ARCH
 
-  - name: Get Docker Keyring 
-    get_url:
-      url: https://download.docker.com/linux/ubuntu/gpg
-      dest: /etc/apt/keyrings/docker.asc
-      mode: a+r
+    - name: Add Docker GPG apt Key
+      apt_key:
+        url: https://download.docker.com/linux/ubuntu/gpg
+        state: present
 
-  - name: Update the apt cache and all packages
-    apt:
-      update_cache: 'yes'
-      upgrade: 'yes'
-      cache_valid_time: 86400 # Once day between updates 
+    - name: Ensure /etc/apt/keyrings directory exists
+      file:
+        path: /etc/apt/keyrings
+        state: directory
+        mode: '0755'
 
-  - name: Create Docker APT source list
-    copy:
-      dest: "/etc/apt/sources.list.d/docker.list"
-      content: |
-        deb [arch={{ ARCH.stdout }} signed-by=/etc/apt/keyrings/docker.asc] https://download.docker.com/linux/ubuntu {{ VERSION_CODENAME.stdout }} stable
+    - name: Get Docker Keyring 
+      get_url:
+        url: https://download.docker.com/linux/ubuntu/gpg
+        dest: /etc/apt/keyrings/docker.asc
+        mode: '0644'
 
-  - name: Install pre-requisites
-    apt: pkg={{ prereqs }} state=present update_cache=true
+    - name: Update the apt cache and all packages
+      apt:
+        update_cache: yes
+        upgrade: yes
+        cache_valid_time: 86400 # Once day between updates 
 
-  - name: Install Docker Packages
-    apt: pkg={{ dockerpackages }} state=present update_cache=true
+    - name: Create Docker APT source list
+      copy:
+        dest: "/etc/apt/sources.list.d/docker.list"
+        content: |
+          deb [arch={{ ARCH.stdout }} signed-by=/etc/apt/keyrings/docker.asc] https://download.docker.com/linux/ubuntu {{ VERSION_CODENAME.stdout }} stable
+
+    - name: Install pre-requisites
+      apt:
+        pkg: "{{ prereqs }}"
+        state: present
+        update_cache: true
+
+    - name: Install Docker Packages
+      apt:
+        pkg: "{{ dockerpackages }}"
+        state: present
+        update_cache: true
     
-  - name: Add ubuntu user to the docker group
-    user:
-      name: ubuntu
-      append: true
-      groups: docker
+    - name: Add invoking user to the docker group
+      user:
+        name: "{{ ansible_user }}"
+        append: true
+        groups: docker
+
+  become: true

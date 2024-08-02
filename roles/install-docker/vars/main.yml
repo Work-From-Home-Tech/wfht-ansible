@@ -2,8 +2,10 @@
 # vars file for install-docker
 prereqs:
   - ca-certificates
-  - htop
-  - tmux
+  - apt-transport-https
+  - curl
+  - software-properties-common
+
 dockerpackages:
   - docker-ce
   - docker-ce-cli
