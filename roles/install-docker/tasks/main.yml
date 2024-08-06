@@ -1,6 +1,10 @@
 ---
+- name: Include variables for Docker installation
+  include_vars: "{{ role_path }}/vars/main.yml"
+
 # tasks file for install-docker
-- block:
+- name: Install Docker on Ubuntu/Debian
+  block:
     - name: Install Docker
       debug:
         msg: "Starting Docker installation process"
@@ -61,3 +65,42 @@
         groups: docker
 
   become: true
+  when: ansible_os_family == "Debian"
+
+##################
+# Install Docker on CentOS/RHEL
+##################
+- name: Install Docker on CentOS/RHEL
+  block:
+    - name: Subscribe to CentOS Docker repository
+      yum_repository:
+        name: docker-ce
+        description: Docker CE Repository
+        baseurl: https://download.docker.com/linux/centos/9/x86_64/stable/
+        gpgcheck: yes
+        gpgkey: https://download.docker.com/linux/centos/gpg
+        enabled: yes
+
+    - name: Clean YUM cache
+      command: yum clean all
+
+    - name: Install Docker packages on RHEL/CentOS
+      yum:
+        name: "{{ docker_packages_rhel }}"
+        state: present
+        update_cache: yes
+
+    - name: Start and enable Docker service
+      service:
+        name: docker
+        state: started
+        enabled: yes
+
+    - name: Add invoking user to the docker group
+      user:
+        name: "{{ ansible_user }}"
+        append: true
+        groups: docker
+        
+  become: true
+  when: ansible_os_family == "RedHat"

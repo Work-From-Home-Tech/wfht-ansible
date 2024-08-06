@@ -1,12 +1,39 @@
 ---
 # vars file for install-docker
-prereqs:
+prereqs_debian:
+  - ca-certificates
+  - apt-transport-https
+  - curl
+  - software-properties-common
+
+prereqs_rhel:
   - ca-certificates
   - apt-transport-https
   - curl
   - software-properties-common
 
 dockerpackages:
+  - docker-ce
+  - docker-ce-cli
+  - containerd.io
+  - docker-buildx-plugin
+  - docker-compose-plugin
+
+docker_packages_debian:
+  - apt-transport-https
+  - ca-certificates
+  - curl
+  - software-properties-common
+  - docker-ce
+  - docker-ce-cli
+  - containerd.io
+  - docker-buildx-plugin
+  - docker-compose-plugin
+
+docker_packages_rhel:
+  - yum-utils
+  - device-mapper-persistent-data
+  - lvm2
   - docker-ce
   - docker-ce-cli
   - containerd.io
