@@ -1,0 +1,26 @@
+---
+# tasks file for app-wordpress
+
+- name: Verify and set ownership of {{ compose_dir }} directory
+  become: true
+  file:
+    path: "{{ compose_dir }}"
+    state: directory
+    owner: "{{ ansible_user_id }}"
+    group: "{{ ansible_user_gid }}"
+    mode: '0755' 
+- name: Copy docker compose.yml file
+  become: true
+  ansible.builtin.copy:
+    src: "{{ role_path }}/files/compose.yml"
+    dest: "{{ compose_dir }}/compose.yml"
+    owner: "{{ ansible_user_id }}"
+    group: "{{ ansible_user_gid }}"
+    mode: '0644'
+- name: Start Docker Compose
+  become: true
+  shell: docker compose up -d
+  args:
+    chdir: "{{ compose_dir }}"
+  register: compose_result
+  no_log: false
