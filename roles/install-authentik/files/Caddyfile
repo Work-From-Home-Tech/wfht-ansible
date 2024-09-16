@@ -1,0 +1,7 @@
+
+
+
+@authentik host authentik.selfhost.help
+handle @authentik {
+    reverse_proxy authentik-server:9000
+}
