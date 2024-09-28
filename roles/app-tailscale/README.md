@@ -1,7 +1,10 @@
 Role Name
 =========
 
-A brief description of the role goes here.
+This is a simplifed install of the tailscale service on a node. If you are looking for a more robust ansible role for tailscale then this repo might be best for you:
+[https://github.com/artis3n/ansible-role-tailscale](https://github.com/artis3n/ansible-role-tailscale)
+
+This playbook support debian and CentOS hosts.
 
 Requirements
 ------------

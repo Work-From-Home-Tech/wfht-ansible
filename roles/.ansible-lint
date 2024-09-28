@@ -1,0 +1,11 @@
+exclude_paths:
+    - .cache/
+    - .github/
+    - .idea/
+    - .vscode/
+    # pre-commit ansible-lint isn't respecting .ansible-lint-ignore
+
+skip_list:
+    - yaml[line-length]
+    - package-latest
+    - var-naming[no-role-prefix]
