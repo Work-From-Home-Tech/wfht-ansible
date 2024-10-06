@@ -27,6 +27,21 @@ cd roles
 export ANSIBLE_ROLES_PATH=`pwd`
 ```
 
+The test playbook has the minimal tasks to complete the role given this example command:
+
+```bash
+ansible-playbook -K -i 192.168.0.22, -u wfht ~/projects/wfht-ansible/roles/install-docker/tests/test.yml
+```
+Requirements:  
+This playbook assumes you have a shared ssh pub certficate to login to the host without a password.  
+
+Options:
+|Option|Description|
+|------|-----------|
+| -K   |This will prompt for the become password (superuser)|
+| -i   |Provide a list of host IP addresses. NOTE the single , used with a single host|
+| -u   |The user that has ssh access to the host(s)|
+
 Including an example of how to use your role (for instance, with variables passed in as parameters) is always nice for users too:
 
     - hosts: servers

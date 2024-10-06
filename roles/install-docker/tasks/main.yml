@@ -48,13 +48,13 @@
 
     - name: Install pre-requisites
       apt:
-        pkg: "{{ prereqs }}"
+        pkg: "{{ prereqs_debian }}"
         state: present
         update_cache: true
 
     - name: Install Docker Packages
       apt:
-        pkg: "{{ dockerpackages }}"
+        pkg: "{{ docker_packages_debian }}"
         state: present
         update_cache: true
     
