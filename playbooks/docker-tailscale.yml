@@ -1,0 +1,7 @@
+- name: Docker install test
+  hosts: all
+
+  roles:
+  - role: install-docker
+  - role: app-tailscale
+  
