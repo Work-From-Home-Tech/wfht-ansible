@@ -1,0 +1,19 @@
+---
+galaxy_info:
+  role_name: update_packages
+  author: Wendell Jefferson
+  description: A role to update Ubuntu and Red Hat Linux packages
+  license: MIT
+  min_ansible_version: "2.9.0"
+  platforms:
+    - name: Ubuntu
+      versions:
+        - bionic
+        - focal
+        - jammy
+    - name: EL
+      versions:
+        - "8"
+        - "9"
+
+dependencies: []

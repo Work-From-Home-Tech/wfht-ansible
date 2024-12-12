@@ -1,0 +1,44 @@
+---
+- name: Update apt cache (Debian/Ubuntu)
+  apt:
+    update_cache: yes
+    cache_valid_time: "{{ update_cache_valid_time }}"
+  when: ansible_os_family == "Debian"
+
+- name: Update packages (Debian/Ubuntu)
+  apt:
+    name: "{{ packages }}"
+    state: latest
+  when: ansible_os_family == "Debian"
+
+- name: Autoremove unused packages (Debian/Ubuntu)
+  apt:
+    autoremove: yes
+  when: 
+    - ansible_os_family == "Debian"
+    - autoremove | bool
+
+- name: Autoclean apt cache (Debian/Ubuntu)
+  apt:
+    autoclean: yes
+  when:
+    - ansible_os_family == "Debian"
+    - autoclean | bool
+
+- name: Update dnf cache (RedHat)
+  dnf:
+    update_cache: yes
+  when: ansible_os_family == "RedHat"
+
+- name: Update packages (RedHat)
+  dnf:
+    name: "{{ packages }}"
+    state: latest
+  when: ansible_os_family == "RedHat"
+
+- name: Autoremove unused packages (RedHat)
+  dnf:
+    autoremove: yes
+  when:
+    - ansible_os_family == "RedHat"
+    - autoremove | bool

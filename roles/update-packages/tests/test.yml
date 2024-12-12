@@ -1,0 +1,7 @@
+---
+- name: Update OS packages
+  hosts: all
+  become: yes
+
+  roles:
+    - update-packages
