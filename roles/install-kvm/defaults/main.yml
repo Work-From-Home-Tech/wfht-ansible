@@ -1,0 +1,35 @@
+---
+# defaults file for install-kvm
+
+# User to add to libvirt group
+kvm_user: "{{ ansible_user }}"
+
+# Whether to start and enable libvirtd service
+kvm_enable_service: true
+
+# Whether to configure nested virtualization
+kvm_enable_nested: false
+
+# KVM network configuration
+kvm_network_name: "default"
+kvm_network_mode: "nat"
+kvm_network_bridge: "virbr0"
+kvm_network_autostart: true
+
+# Package lists for different distributions
+kvm_packages_debian:
+  - qemu-kvm
+  - libvirt-daemon-system
+  - libvirt-clients
+  - bridge-utils
+  - virt-manager
+  - python3-libvirt
+
+kvm_packages_redhat:
+  - qemu-kvm
+  - libvirt
+  - libvirt-client
+  - bridge-utils
+  - virt-install
+  - virt-manager
+  - python3-libvirt

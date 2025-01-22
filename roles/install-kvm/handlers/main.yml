@@ -1,0 +1,27 @@
+---
+# handlers file for install-kvm
+
+- name: restart libvirtd
+  service:
+    name: "{{ item }}"
+    state: restarted
+  become: true
+  with_items:
+    - libvirtd
+    - libvirt-bin
+  ignore_errors: true  # Some distributions might not have both services
+
+- name: reload kvm modules
+  shell: |
+    rmmod kvm_intel kvm_amd kvm || true
+    modprobe kvm
+    modprobe kvm_intel || modprobe kvm_amd
+  become: true
+  when: ansible_virtualization_role == "host"
+
+- name: restart systemd-networkd
+  service:
+    name: systemd-networkd
+    state: restarted
+  become: true
+  when: ansible_service_mgr == "systemd"

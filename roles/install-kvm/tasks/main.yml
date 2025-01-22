@@ -1,0 +1,79 @@
+---
+# tasks file for install-kvm
+
+- name: Check virtualization support
+  shell: grep -E 'svm|vmx' /proc/cpuinfo
+  register: virt_support
+  changed_when: false
+  failed_when: false
+
+- name: Fail if virtualization is not supported
+  fail:
+    msg: "CPU virtualization is not supported or not enabled in BIOS"
+  when: virt_support.rc != 0
+
+- name: Include OS-specific tasks
+  include_tasks: "{{ ansible_os_family | lower }}.yml"
+
+- name: Ensure KVM modules are loaded
+  modprobe:
+    name: "{{ item }}"
+    state: present
+  with_items:
+    - kvm
+    - "{{ 'kvm_intel' if 'vmx' in virt_support.stdout else 'kvm_amd' }}"
+  become: true
+  notify: reload kvm modules
+
+- name: Configure nested virtualization
+  copy:
+    dest: "/etc/modprobe.d/kvm.conf"
+    content: |
+      options kvm_intel nested=1
+      options kvm_amd nested=1
+    mode: '0644'
+  become: true
+  when: kvm_enable_nested
+  notify: reload kvm modules
+
+- name: Add user to libvirt group
+  user:
+    name: "{{ kvm_user }}"
+    groups: libvirt
+    append: yes
+  become: true
+  when: kvm_user is defined
+
+- name: Ensure libvirtd service is started and enabled
+  service:
+    name: libvirtd
+    state: started
+    enabled: "{{ kvm_enable_service }}"
+  become: true
+  when: kvm_enable_service
+
+- name: Configure default network
+  virt_net:
+    command: define
+    name: "{{ kvm_network_name }}"
+    xml: |
+      <network>
+        <name>{{ kvm_network_name }}</name>
+        <forward mode='{{ kvm_network_mode }}'/>
+        <bridge name='{{ kvm_network_bridge }}'/>
+        <ip address='192.168.122.1' netmask='255.255.255.0'>
+          <dhcp>
+            <range start='192.168.122.2' end='192.168.122.254'/>
+          </dhcp>
+        </ip>
+      </network>
+  become: true
+  when: kvm_network_autostart
+
+- name: Start and autostart default network
+  virt_net:
+    name: "{{ kvm_network_name }}"
+    state: active
+    autostart: "{{ kvm_network_autostart }}"
+  become: true
+  when: kvm_network_autostart

@@ -1,0 +1,57 @@
+---
+# Debian/Ubuntu specific tasks for install-kvm
+
+- name: Update apt cache
+  apt:
+    update_cache: yes
+    cache_valid_time: 3600
+  become: true
+
+- name: Install KVM and related packages
+  apt:
+    name: "{{ kvm_packages_debian }}"
+    state: present
+  become: true
+
+- name: Ensure libvirtd group exists
+  group:
+    name: libvirt
+    state: present
+  become: true
+
+- name: Load kernel modules at boot
+  copy:
+    dest: /etc/modules-load.d/kvm.conf
+    content: |
+      kvm
+      kvm_intel
+      kvm_amd
+    mode: '0644'
+  become: true
+  notify: reload kvm modules
+
+- name: Configure AppArmor for libvirt
+  copy:
+    dest: /etc/apparmor.d/local/abstractions/libvirt-qemu
+    content: |
+      # Allow KVM process access
+      /dev/kvm rw,
+      /dev/net/tun rw,
+    mode: '0644'
+    force: no  # Don't overwrite if exists
+  become: true
+  notify: restart libvirtd
+  when: ansible_os_family == "Debian"
+
+- name: Check if AppArmor is active
+  command: systemctl is-active apparmor
+  register: apparmor_status
+  changed_when: false
+  failed_when: false
+  become: true
+
+- name: Reload AppArmor if active
+  command: systemctl reload apparmor
+  become: true
+  when: apparmor_status.rc == 0
+  notify: restart libvirtd

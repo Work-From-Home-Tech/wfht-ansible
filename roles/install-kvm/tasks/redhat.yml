@@ -1,0 +1,64 @@
+---
+# RedHat/CentOS specific tasks for install-kvm
+
+- name: Enable EPEL repository
+  dnf:
+    name: epel-release
+    state: present
+  become: true
+  when: ansible_distribution != "Fedora"
+
+- name: Install KVM and related packages
+  dnf:
+    name: "{{ kvm_packages_redhat }}"
+    state: present
+  become: true
+
+- name: Ensure libvirtd group exists
+  group:
+    name: libvirt
+    state: present
+  become: true
+
+- name: Load kernel modules at boot
+  copy:
+    dest: /etc/modules-load.d/kvm.conf
+    content: |
+      kvm
+      kvm_intel
+      kvm_amd
+    mode: '0644'
+  become: true
+  notify: reload kvm modules
+
+- name: Configure SELinux for virtualization
+  seboolean:
+    name: "{{ item }}"
+    state: yes
+    persistent: yes
+  with_items:
+    - virt_use_samba
+    - virt_use_nfs
+    - virt_sandbox_use_netlink
+  become: true
+  when: ansible_selinux.status == "enabled"
+
+- name: Open firewall ports for KVM
+  firewalld:
+    zone: public
+    service: "{{ item }}"
+    permanent: yes
+    state: enabled
+  with_items:
+    - libvirt
+    - libvirt-tls
+  become: true
+  when: ansible_service_mgr == "systemd"
+  notify: restart systemd-networkd
+
+- name: Reload firewall
+  systemd:
+    name: firewalld
+    state: reloaded
+  become: true
+  when: ansible_service_mgr == "systemd"

@@ -1,0 +1,8 @@
+---
+- hosts: all
+  become: true
+  roles:
+    - role: install-kvm
+      vars:
+        kvm_enable_nested: true
+        kvm_network_autostart: true
