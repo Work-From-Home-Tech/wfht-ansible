@@ -30,13 +30,36 @@
   become: true
   notify: reload kvm modules
 
+- name: Ensure AppArmor abstractions directory exists
+  file:
+    path: /etc/apparmor.d/local/abstractions
+    state: directory
+    mode: '0755'
+  become: true
+  when: ansible_os_family == "Debian"
+
 - name: Configure AppArmor for libvirt
   copy:
     dest: /etc/apparmor.d/local/abstractions/libvirt-qemu
     content: |
+      # Local modifications to libvirt-qemu profile
       # Allow KVM process access
       /dev/kvm rw,
       /dev/net/tun rw,
+      # Allow access to host resources
+      /dev/ptmx rw,
+      /dev/pts/* rw,
+      # Allow access to shared memory
+      /dev/shm/** rw,
+      # Allow access to USB devices
+      /dev/bus/usb/** rw,
+      # Allow access to sound devices
+      /dev/snd/** rw,
+      # Allow access to CD/DVD devices
+      /dev/sr* r,
+      # Allow access to removable media
+      /media/** r,
+      /mnt/** r,
     mode: '0644'
     force: no  # Don't overwrite if exists
   become: true
