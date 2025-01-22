@@ -24,6 +24,7 @@ kvm_packages_debian:
   - bridge-utils
   - virt-manager
   - python3-libvirt
+  - python3-lxml
 
 kvm_packages_redhat:
   - qemu-kvm
@@ -33,3 +34,4 @@ kvm_packages_redhat:
   - virt-install
   - virt-manager
   - python3-libvirt
+  - python3-lxml
