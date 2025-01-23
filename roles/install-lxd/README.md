@@ -29,7 +29,7 @@ lxd_bridge_ipv6_enabled: false
 lxd_trust_password: ""  # Set this for remote access
 
 # Users to add to lxd group
-lxd_users: ["{{ ansible_user }}"]
+lxd_users: ["{{ lookup('env', 'USER') }}"]  # Defaults to user executing the playbook
 ```
 
 ## Dependencies

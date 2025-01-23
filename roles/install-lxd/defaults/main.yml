@@ -17,7 +17,7 @@ lxd_bridge_ipv6_dhcp_range: ""
 
 # Security configuration
 lxd_trust_password: ""  # For remote access
-lxd_users: ["{{ ansible_user }}"]
+lxd_users: ["{{ lookup('env', 'USER') }}"]  # Default to user executing the playbook
 
 # Package configuration
 lxd_snap_channel: "latest/stable"  # For Ubuntu

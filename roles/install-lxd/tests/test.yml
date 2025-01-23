@@ -6,7 +6,7 @@
     lxd_trust_password: "wfhtpassword"
     lxd_bridge_ipv4_addr: "10.0.0.1/24"
     lxd_users:
-      - "{{ ansible_user }}"
+      - "{{ lookup('env', 'USER') }}"  # Use the user executing the playbook
     lxd_limits_memory: "4GB"
     lxd_limits_cpu: "2"
   roles:
