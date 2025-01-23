@@ -1,0 +1,104 @@
+---
+# Debian/Ubuntu specific tasks for install-lxd
+
+- name: Update apt cache
+  apt:
+    update_cache: yes
+    cache_valid_time: 3600
+  become: true
+
+- name: Install required packages
+  apt:
+    name: "{{ lxd_packages_debian }}"
+    state: present
+  become: true
+
+- name: Remove legacy LXD package if installed
+  apt:
+    name: lxd
+    state: absent
+    purge: yes
+  become: true
+
+- name: Remove legacy LXD.1 package if installed
+  apt:
+    name: lxd.1
+    state: absent
+    purge: yes
+  become: true
+
+- name: Ensure snapd is enabled
+  service:
+    name: snapd
+    state: started
+    enabled: yes
+  become: true
+
+- name: Wait for snap service
+  wait_for:
+    path: /run/snapd.socket
+    timeout: 30
+  become: true
+
+- name: Install LXD snap
+  snap:
+    name: lxd
+    channel: "{{ lxd_snap_channel }}"
+    state: present
+  become: true
+  notify: Restart LXD snap
+
+- name: Configure kernel parameters for LXD
+  sysctl:
+    name: "{{ item.key }}"
+    value: "{{ item.value }}"
+    state: present
+    sysctl_file: /etc/sysctl.d/99-lxd.conf
+  with_items:
+    - { key: 'fs.inotify.max_queued_events', value: '1048576' }
+    - { key: 'fs.inotify.max_user_instances', value: '1048576' }
+    - { key: 'fs.inotify.max_user_watches', value: '1048576' }
+    - { key: 'kernel.dmesg_restrict', value: '1' }
+    - { key: 'net.ipv4.ip_forward', value: '1' }
+    - { key: 'net.ipv6.conf.all.forwarding', value: '1' }
+    - { key: 'net.ipv4.neigh.default.gc_thresh3', value: '8192' }
+    - { key: 'net.ipv6.neigh.default.gc_thresh3', value: '8192' }
+  become: true
+
+- name: Load required kernel modules
+  modprobe:
+    name: "{{ item }}"
+    state: present
+  with_items:
+    - br_netfilter
+    - overlay
+    - shiftfs  # Optional, only available on Ubuntu
+  become: true
+  ignore_errors: true  # Some modules might not be available
+
+- name: Ensure kernel modules load at boot
+  copy:
+    dest: /etc/modules-load.d/lxd.conf
+    content: |
+      br_netfilter
+      overlay
+      shiftfs
+    mode: '0644'
+  become: true
+
+- name: Configure AppArmor for LXD (if installed)
+  copy:
+    dest: /etc/apparmor.d/local/lxd
+    content: |
+      # Allow LXD to manage AppArmor profiles
+      profile lxd flags=(attach_disconnected,mediate_deleted) {
+        # Allow all capabilities
+        capability,
+        # Allow LXD to manage AppArmor
+        /sys/kernel/security/apparmor/** rw,
+      }
+    mode: '0644'
+    force: no
+  become: true
+  when: ansible_os_family == "Debian"
+  notify: Restart LXD snap

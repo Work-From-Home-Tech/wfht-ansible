@@ -1,0 +1,27 @@
+---
+galaxy_info:
+  author: Wendell
+  description: Install and configure LXD container hypervisor on Ubuntu and RedHat systems
+  license: MIT
+  min_ansible_version: "2.9"
+  platforms:
+    - name: Ubuntu
+      versions:
+        - focal
+        - jammy
+    - name: EL  # Enterprise Linux (RedHat/CentOS)
+      versions:
+        - "8"
+        - "9"
+    - name: Fedora
+      versions:
+        - all
+
+  galaxy_tags:
+    - lxd
+    - containers
+    - virtualization
+    - system
+    - linux
+
+dependencies: []

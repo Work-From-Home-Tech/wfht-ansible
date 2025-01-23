@@ -1,0 +1,92 @@
+---
+# tasks file for install-lxd
+
+- name: Include OS-specific tasks
+  include_tasks: "{{ ansible_os_family | lower }}.yml"
+
+- name: Ensure LXD group exists
+  group:
+    name: lxd
+    state: present
+  become: true
+
+- name: Add users to LXD group
+  user:
+    name: "{{ item }}"
+    groups: lxd
+    append: yes
+  with_items: "{{ lxd_users }}"
+  become: true
+  when: lxd_users | length > 0
+
+- name: Create LXD preseed configuration
+  template:
+    src: preseed.yml.j2
+    dest: /tmp/preseed.yml
+    mode: '0600'
+  become: true
+  when: lxd_preseed_config | bool
+  notify: Reload LXD configuration
+
+- name: Initialize LXD with preseed
+  command: cat /tmp/preseed.yml | lxd init --preseed
+  become: true
+  when: lxd_preseed_config | bool
+  changed_when: true
+  notify: Reload LXD configuration
+
+- name: Configure default profile
+  template:
+    src: default-profile.yml.j2
+    dest: /tmp/lxd_default_profile.yml
+    mode: '0600'
+  become: true
+  when: lxd_default_profile | bool
+  notify: Update LXD profiles
+
+- name: Configure storage pool
+  command: >
+    lxc storage create {{ lxd_storage_pool_name }} {{ lxd_storage_backend }}
+    {% if lxd_storage_backend in ['zfs', 'btrfs'] %}size={{ lxd_storage_pool_size }}{% endif %}
+  become: true
+  register: storage_create
+  changed_when: storage_create.rc == 0
+  failed_when: storage_create.rc != 0 and 'already exists' not in storage_create.stderr
+  notify: Reload LXD configuration
+
+- name: Configure network bridge
+  command: >
+    lxc network create {{ lxd_bridge_name }}
+    ipv4.address={{ lxd_bridge_ipv4_addr }}
+    ipv4.dhcp={{ lxd_bridge_ipv4_dhcp | lower }}
+    ipv4.dhcp.ranges={{ lxd_bridge_ipv4_dhcp_range }}
+    ipv6.address={{ lxd_bridge_ipv6_addr }}
+    ipv6.dhcp={{ lxd_bridge_ipv6_enabled | lower }}
+    {% if lxd_bridge_ipv6_enabled and lxd_bridge_ipv6_dhcp_range %}
+    ipv6.dhcp.ranges={{ lxd_bridge_ipv6_dhcp_range }}
+    {% endif %}
+  become: true
+  register: network_create
+  changed_when: network_create.rc == 0
+  failed_when: network_create.rc != 0 and 'already exists' not in network_create.stderr
+  notify: Reload network configuration
+
+- name: Set resource limits
+  command: >
+    lxc profile set default
+    {% if lxd_limits_cpu != "" %}limits.cpu={{ lxd_limits_cpu }}{% endif %}
+    {% if lxd_limits_memory != "" %}limits.memory={{ lxd_limits_memory }}{% endif %}
+    {% if lxd_limits_disk != "" %}limits.disk={{ lxd_limits_disk }}{% endif %}
+  become: true
+  when: lxd_limits_cpu != "" or lxd_limits_memory != "" or lxd_limits_disk != ""
+  changed_when: true
+  notify: Update LXD profiles
+
+- name: Clean up temporary files
+  file:
+    path: "{{ item }}"
+    state: absent
+  with_items:
+    - /tmp/preseed.yml
+    - /tmp/lxd_default_profile.yml
+  become: true

@@ -1,0 +1,44 @@
+---
+# defaults file for install-lxd
+
+# Storage configuration
+lxd_storage_backend: "dir"  # Options: dir, zfs, btrfs
+lxd_storage_pool_name: "default"
+lxd_storage_pool_size: "5GB"  # Only used for zfs/btrfs
+
+# Network configuration
+lxd_bridge_name: "lxdbr0"
+lxd_bridge_ipv4_addr: "10.0.0.1/24"
+lxd_bridge_ipv4_dhcp: true
+lxd_bridge_ipv4_dhcp_range: "10.0.0.2,10.0.0.254"
+lxd_bridge_ipv6_enabled: false
+lxd_bridge_ipv6_addr: ""
+lxd_bridge_ipv6_dhcp_range: ""
+
+# Security configuration
+lxd_trust_password: ""  # For remote access
+lxd_users: ["{{ ansible_user }}"]
+
+# Package configuration
+lxd_snap_channel: "latest/stable"  # For Ubuntu
+lxd_packages_debian:
+  - snapd
+  - zfsutils-linux  # For ZFS support
+  - btrfs-progs     # For BTRFS support
+
+lxd_packages_redhat:
+  - epel-release
+  - lxd
+  - lxd-tools
+  - zfs-dkms        # For ZFS support
+  - btrfs-progs     # For BTRFS support
+
+# Resource limits
+lxd_limits_cpu: ""      # Number of CPUs (empty for unlimited)
+lxd_limits_memory: ""   # Memory limit (empty for unlimited)
+lxd_limits_disk: ""     # Disk limit (empty for unlimited)
+
+# Additional configuration
+lxd_preseed_config: true  # Whether to use preseed configuration
+lxd_enable_clustering: false  # Enable LXD clustering
+lxd_default_profile: true    # Configure default profile

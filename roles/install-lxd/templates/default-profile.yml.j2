@@ -1,0 +1,27 @@
+config:
+  {% if lxd_limits_cpu != "" %}
+  limits.cpu: "{{ lxd_limits_cpu }}"
+  {% endif %}
+  {% if lxd_limits_memory != "" %}
+  limits.memory: "{{ lxd_limits_memory }}"
+  {% endif %}
+  {% if lxd_limits_disk != "" %}
+  limits.disk: "{{ lxd_limits_disk }}"
+  {% endif %}
+  boot.autostart: "true"
+  security.nesting: "true"
+  security.privileged: "false"
+  
+description: Default LXD profile
+devices:
+  eth0:
+    name: eth0
+    nictype: bridged
+    parent: "{{ lxd_bridge_name }}"
+    type: nic
+  root:
+    path: /
+    pool: "{{ lxd_storage_pool_name }}"
+    type: disk
+name: default
+used_by: []

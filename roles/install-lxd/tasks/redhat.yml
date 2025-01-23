@@ -1,0 +1,99 @@
+---
+# RedHat/CentOS specific tasks for install-lxd
+
+- name: Enable EPEL repository
+  dnf:
+    name: epel-release
+    state: present
+  become: true
+  when: ansible_distribution != "Fedora"
+
+- name: Install required packages
+  dnf:
+    name: "{{ lxd_packages_redhat }}"
+    state: present
+  become: true
+
+- name: Configure SELinux for LXD
+  seboolean:
+    name: "{{ item }}"
+    state: yes
+    persistent: yes
+  with_items:
+    - virt_use_nfs
+    - virt_sandbox_use_netlink
+  become: true
+  when: ansible_selinux.status == "enabled"
+
+- name: Configure kernel parameters for LXD
+  sysctl:
+    name: "{{ item.key }}"
+    value: "{{ item.value }}"
+    state: present
+    sysctl_file: /etc/sysctl.d/99-lxd.conf
+  with_items:
+    - { key: 'fs.inotify.max_queued_events', value: '1048576' }
+    - { key: 'fs.inotify.max_user_instances', value: '1048576' }
+    - { key: 'fs.inotify.max_user_watches', value: '1048576' }
+    - { key: 'kernel.dmesg_restrict', value: '1' }
+    - { key: 'net.ipv4.ip_forward', value: '1' }
+    - { key: 'net.ipv6.conf.all.forwarding', value: '1' }
+    - { key: 'net.ipv4.neigh.default.gc_thresh3', value: '8192' }
+    - { key: 'net.ipv6.neigh.default.gc_thresh3', value: '8192' }
+  become: true
+
+- name: Load required kernel modules
+  modprobe:
+    name: "{{ item }}"
+    state: present
+  with_items:
+    - br_netfilter
+    - overlay
+  become: true
+
+- name: Ensure kernel modules load at boot
+  copy:
+    dest: /etc/modules-load.d/lxd.conf
+    content: |
+      br_netfilter
+      overlay
+    mode: '0644'
+  become: true
+
+- name: Configure firewall for LXD
+  firewalld:
+    zone: public
+    port: "{{ item }}"
+    permanent: yes
+    state: enabled
+  with_items:
+    - 8443/tcp  # LXD API
+    - 1443/tcp  # Cluster communications
+  become: true
+  when: ansible_service_mgr == "systemd"
+  notify: Restart systemd-networkd
+
+- name: Ensure LXD service is enabled and started
+  service:
+    name: lxd
+    state: started
+    enabled: yes
+  become: true
+  notify: Restart LXD service
+
+- name: Configure SELinux context for LXD storage
+  sefcontext:
+    target: '{{ item }}'
+    setype: virt_var_lib_t
+    state: present
+  with_items:
+    - '/var/lib/lxd(/.*)?'
+    - '/var/lib/lxd/storage-pools(/.*)?'
+  become: true
+  when: ansible_selinux.status == "enabled"
+
+- name: Apply SELinux context to LXD directories
+  command: restorecon -Rv /var/lib/lxd
+  become: true
+  when: ansible_selinux.status == "enabled"
+  changed_when: true

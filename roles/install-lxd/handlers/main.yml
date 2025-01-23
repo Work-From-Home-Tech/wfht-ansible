@@ -1,0 +1,36 @@
+---
+# handlers file for install-lxd
+
+- name: Restart LXD service
+  service:
+    name: lxd
+    state: restarted
+  become: true
+  when: ansible_service_mgr == "systemd" and not ansible_distribution == "Ubuntu"
+
+- name: Restart LXD snap
+  command: snap restart lxd
+  become: true
+  when: ansible_distribution == "Ubuntu"
+
+- name: Reload LXD configuration
+  command: lxd init --auto
+  become: true
+  when: lxd_preseed_config | bool
+
+- name: Reload network configuration
+  command: lxc network refresh {{ lxd_bridge_name }}
+  become: true
+  ignore_errors: true  # In case bridge doesn't exist yet
+
+- name: Update LXD profiles
+  command: lxc profile edit default < /tmp/lxd_default_profile.yml
+  become: true
+  when: lxd_default_profile | bool
+
+- name: Restart systemd-networkd
+  service:
+    name: systemd-networkd
+    state: restarted
+  become: true
+  when: ansible_service_mgr == "systemd"
