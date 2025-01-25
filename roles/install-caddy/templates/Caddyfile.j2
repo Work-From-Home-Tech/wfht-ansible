@@ -1,0 +1,10 @@
+{
+    # Global options
+    admin off
+    log {
+        output file {{ caddy_log_dir }}/access.log
+    }
+}
+
+# Import all .caddyfile configurations from the caddyfile.d directory
+import {{ caddy_config_d_dir }}/*.caddyfile

@@ -1,0 +1,32 @@
+---
+- name: Install required packages
+  ansible.builtin.apt:
+    name: "{{ caddy_package_dependencies }}"
+    state: present
+    update_cache: true
+
+- name: Add Caddy GPG key
+  ansible.builtin.apt_key:
+    url: "{{ caddy_repo_gpg_key }}"
+    state: present
+
+- name: Add Caddy repository
+  ansible.builtin.apt_repository:
+    repo: "{{ caddy_repo_url }}"
+    state: present
+    filename: caddy-stable
+
+- name: Install Caddy
+  ansible.builtin.apt:
+    name: caddy
+    state: present
+    update_cache: true
+  notify: "restart caddy"
+
+- name: Ensure Caddy user exists
+  ansible.builtin.user:
+    name: "{{ caddy_user }}"
+    system: true
+    group: "{{ caddy_group }}"
+    create_home: false
+    shell: /usr/sbin/nologin

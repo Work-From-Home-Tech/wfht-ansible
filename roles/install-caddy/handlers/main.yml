@@ -1,0 +1,12 @@
+---
+- name: Validate Caddy configuration
+  ansible.builtin.command: caddy validate --config {{ caddy_config_dir }}/Caddyfile
+  changed_when: false
+  listen: "restart caddy"
+
+- name: Restart Caddy
+  ansible.builtin.systemd:
+    name: caddy
+    state: restarted
+    daemon_reload: true
+  listen: "restart caddy"

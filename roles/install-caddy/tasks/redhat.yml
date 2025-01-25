@@ -1,0 +1,35 @@
+---
+- name: Install required packages
+  ansible.builtin.dnf:
+    name: "{{ caddy_package_dependencies }}"
+    state: present
+
+- name: Add Caddy COPR repository
+  ansible.builtin.get_url:
+    url: "{{ caddy_repo_config_url }}"
+    dest: "{{ caddy_repo_file }}"
+    mode: "0644"
+
+- name: Install Caddy
+  ansible.builtin.dnf:
+    name: caddy
+    state: present
+  notify: "restart caddy"
+
+- name: Ensure Caddy user exists
+  ansible.builtin.user:
+    name: "{{ caddy_user }}"
+    system: true
+    group: "{{ caddy_group }}"
+    create_home: false
+    shell: /sbin/nologin
+
+- name: Configure SELinux for Caddy
+  ansible.builtin.seboolean:
+    name: "{{ item }}"
+    state: true
+    persistent: true
+  with_items:
+    - httpd_can_network_connect
+    - httpd_can_network_bind_web_port
+  when: ansible_selinux.status == "enabled"

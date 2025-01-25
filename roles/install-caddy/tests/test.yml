@@ -1,0 +1,20 @@
+---
+- hosts: all
+  become: true
+  gather_facts: true
+  
+  roles:
+    - role: install-caddy
+
+  post_tasks:
+    - name: Create a sample virtual host configuration
+      ansible.builtin.copy:
+        content: |
+          example.com {
+              respond "Hello from Caddy!"
+          }
+        dest: "{{ caddy_config_d_dir }}/example.caddyfile"
+        owner: "{{ caddy_user }}"
+        group: "{{ caddy_group }}"
+        mode: "0644"
+      notify: "reload caddy"

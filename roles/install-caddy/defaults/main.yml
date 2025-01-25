@@ -1,0 +1,17 @@
+---
+# Caddy user and group
+caddy_user: "caddy"
+caddy_group: "caddy"
+
+# Configuration directories
+caddy_config_dir: "/etc/caddy"
+caddy_config_d_dir: "/etc/caddy/caddyfile.d"
+
+# Service configuration
+caddy_service_enabled: true
+caddy_service_state: "started"
+
+# Additional configuration
+caddy_systemd_capabilities_enabled: true
+caddy_log_dir: "/var/log/caddy"
+caddy_data_dir: "/var/lib/caddy"

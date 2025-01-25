@@ -1,0 +1,8 @@
+---
+# RedHat/Rocky Linux specific variables
+caddy_package_dependencies:
+  - dnf-plugins-core
+  - yum-utils
+
+caddy_repo_config_url: "https://dl.cloudsmith.io/public/caddy/stable/config.rpm.txt"
+caddy_repo_file: "/etc/yum.repos.d/caddy-stable.repo"

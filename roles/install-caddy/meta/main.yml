@@ -1,0 +1,24 @@
+---
+galaxy_info:
+  role_name: install_caddy
+  author: WFHT Ansible Project
+  description: Install and configure Caddy web server
+  license: MIT
+  min_ansible_version: "2.9"
+  platforms:
+    - name: Ubuntu
+      versions:
+        - focal
+        - jammy
+    - name: EL  # Enterprise Linux (RedHat, Rocky Linux, etc)
+      versions:
+        - "8"
+        - "9"
+  galaxy_tags:
+    - web
+    - caddy
+    - proxy
+    - server
+    - reverse_proxy
+
+dependencies: []

@@ -1,0 +1,11 @@
+---
+# Debian/Ubuntu specific variables
+caddy_package_dependencies:
+  - debian-keyring
+  - debian-archive-keyring
+  - apt-transport-https
+  - curl
+  - gnupg2
+
+caddy_repo_url: "deb https://dl.cloudsmith.io/public/caddy/stable/deb/debian any-version main"
+caddy_repo_gpg_key: "https://dl.cloudsmith.io/public/caddy/stable/gpg.key"

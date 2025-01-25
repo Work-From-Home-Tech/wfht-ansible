@@ -1,0 +1,68 @@
+---
+- name: Load OS-specific variables
+  ansible.builtin.include_vars: "{{ lookup('first_found', params) }}"
+  vars:
+    params:
+      files:
+        - "{{ ansible_distribution | lower }}.yml"
+        - "{{ ansible_os_family | lower }}.yml"
+      paths:
+        - "vars"
+  tags: ["always"]
+
+- name: Load OS-specific tasks
+  ansible.builtin.include_tasks: "{{ lookup('first_found', params) }}"
+  vars:
+    params:
+      files:
+        - "{{ ansible_distribution | lower }}.yml"
+        - "{{ ansible_os_family | lower }}.yml"
+      paths:
+        - "tasks"
+  tags: ["install"]
+
+- name: Ensure Caddy directories exist
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: directory
+    owner: "{{ caddy_user }}"
+    group: "{{ caddy_group }}"
+    mode: "0755"
+  with_items:
+    - "{{ caddy_config_dir }}"
+    - "{{ caddy_config_d_dir }}"
+    - "{{ caddy_log_dir }}"
+    - "{{ caddy_data_dir }}"
+  tags: ["config"]
+
+- name: Configure main Caddyfile
+  ansible.builtin.template:
+    src: Caddyfile.j2
+    dest: "{{ caddy_config_dir }}/Caddyfile"
+    owner: "{{ caddy_user }}"
+    group: "{{ caddy_group }}"
+    mode: "0644"
+  register: caddyfile_config
+
+- name: Validate Caddyfile configuration
+  ansible.builtin.command: caddy validate --config {{ caddy_config_dir }}/Caddyfile
+  register: caddy_validate
+  changed_when: false
+  failed_when: caddy_validate.rc != 0
+  when: caddyfile_config.changed
+  notify: "restart caddy"
+  tags: ["config"]
+
+- name: Ensure Caddy service is enabled
+  ansible.builtin.systemd:
+    name: caddy
+    enabled: "{{ caddy_service_enabled }}"
+  tags: ["service"]
+
+- name: Start Caddy service if enabled
+  ansible.builtin.systemd:
+    name: caddy
+    state: "{{ caddy_service_state }}"
+    daemon_reload: true
+  when: caddy_service_enabled | bool and caddy_service_state == "started"
+  tags: ["service"]
