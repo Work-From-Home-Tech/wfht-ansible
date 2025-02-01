@@ -1,0 +1,9 @@
+---
+- name: update ca certificates
+  command: >
+    {% if ansible_os_family | lower == 'debian' %}
+    update-ca-certificates
+    {% elif ansible_os_family | lower == 'redhat' %}
+    update-ca-trust extract
+    {% endif %}
+  changed_when: true

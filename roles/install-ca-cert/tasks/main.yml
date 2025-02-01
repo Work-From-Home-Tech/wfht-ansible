@@ -1,0 +1,9 @@
+---
+- name: Include OS-specific tasks
+  include_tasks: "{{ ansible_os_family | lower }}.yml"
+  when: ansible_os_family | lower in ['debian', 'redhat']
+
+- name: Fail if unsupported distribution
+  fail:
+    msg: "This role only supports Debian/Ubuntu and RedHat-based distributions"
+  when: ansible_os_family | lower not in ['debian', 'redhat']

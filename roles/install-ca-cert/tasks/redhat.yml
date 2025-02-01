@@ -1,0 +1,17 @@
+---
+- name: Create CA certificates directory
+  file:
+    path: /etc/pki/ca-trust/source/anchors
+    state: directory
+    mode: '0755'
+
+- name: Copy CA certificate
+  copy:
+    src: my.certificate.com.crt
+    dest: /etc/pki/ca-trust/source/anchors/my.certificate.com.crt
+    mode: '0644'
+  notify: update ca certificates
+
+- name: Force update CA certificates
+  command: update-ca-trust extract
+  changed_when: true

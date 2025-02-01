@@ -1,0 +1,7 @@
+---
+- name: Install Certificate Authority
+  hosts: all
+  become: true
+
+  roles:
+    - install-ca-cert
