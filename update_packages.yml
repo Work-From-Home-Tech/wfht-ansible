@@ -1,5 +1,5 @@
 ---
-- name: Install Docker-CE and tailscale
+- name: Update OS packages
   hosts: all
   become: true
 
@@ -7,6 +7,4 @@
     roles_path: "{{ playbook_dir }}/roles"
 
   roles:
-  - role: install-docker
-  - role: app-tailscale
-  
+    - update-packages
