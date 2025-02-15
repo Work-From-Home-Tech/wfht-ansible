@@ -7,8 +7,8 @@
 
 - name: Copy CA certificate
   copy:
-    src: my.certificate.com.crt
-    dest: /etc/pki/ca-trust/source/anchors/my.certificate.com.crt
+    src: "{{ ca_cert_file }}"
+    dest: "/etc/pki/ca-trust/source/anchors/{{ ca_cert_file | basename }}"
     mode: '0644'
   notify: update ca certificates
 

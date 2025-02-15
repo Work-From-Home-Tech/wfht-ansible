@@ -7,8 +7,8 @@
 
 - name: Copy CA certificate
   copy:
-    src: my.certificate.com.crt
-    dest: /usr/local/share/ca-certificates/my.certificate.com.crt
+    src: "{{ ca_cert_file }}"
+    dest: "/usr/local/share/ca-certificates/{{ ca_cert_file | basename }}"
     mode: '0644'
   notify: update ca certificates
 
