@@ -7,8 +7,8 @@
 
 - name: Copy CA certificate
   copy:
-    src: "{{ ca_cert_file }}"
-    dest: "/usr/local/share/ca-certificates/{{ ca_cert_file | basename }}"
+    src: "{{ ca_cert_path | default(ca_cert_file) }}"
+    dest: "/usr/local/share/ca-certificates/{{ (ca_cert_path | default(ca_cert_file)) | basename }}"
     mode: '0644'
   notify: update ca certificates
 

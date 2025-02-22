@@ -1,3 +1,6 @@
 ---
 # Default certificate file to install (relative to files directory)
 ca_cert_file: "my.certificate.com.crt.example"
+
+# Optional: Full path to certificate file (takes precedence over ca_cert_file)
+ca_cert_path: ""
