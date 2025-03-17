@@ -1,0 +1,10 @@
+---
+- name: Update OS packages
+  hosts: all
+  become: true
+
+  vars:
+    roles_path: "{{ playbook_dir }}/roles"
+
+  roles:
+    - install-caddy
