@@ -88,6 +88,11 @@ After installation:
 1. The kubeconfig file will be available at `/etc/rancher/k3s/k3s.yaml` on the master node
 2. K3s service will be running and enabled on all nodes
 3. Worker nodes will be joined to the cluster automatically
+4. Reference Links:
+   1. K3s - [https://k3s.io](https://k3s.io)  
+   2. K9s - [https://github.com/derailed/k9s](https://github.com/derailed/k9s)  
+   3. Tools - [https://kubernetes.io/docs/tasks/tools](https://kubernetes.io/docs/tasks/tools)  
+   4. Helm - [https://helm.sh](https://helm.sh)
 
 ## License
 
