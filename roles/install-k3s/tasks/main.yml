@@ -19,16 +19,27 @@
 
 - name: Install K3s on master
   shell: |
-    curl -sfL https://get.k3s.io | INSTALL_K3S_EXEC="--write-kubeconfig-mode 644" sh -
+    curl -sfL https://get.k3s.io | INSTALL_K3S_EXEC="--write-kubeconfig-mode 644 --node-ip {{ ansible_host }} --advertise-address {{ ansible_host }} --bind-address {{ ansible_host }}" sh -
   args:
     creates: /usr/local/bin/k3s
+  when: inventory_hostname == 'MASTER'
+
+- name: Get master node information
+  set_fact:
+    master_node: "{{ groups['k3s_cluster'] | select('match', '^MASTER$') | first }}"
+  run_once: true
 
 - name: Get K3s token
   shell: cat /var/lib/rancher/k3s/server/node-token
   register: k3s_token
   when: inventory_hostname == 'MASTER'
 
+- name: Share token with all hosts
+  set_fact:
+    k3s_node_token: "{{ hostvars['MASTER']['k3s_token']['stdout'] }}"
+  when: hostvars['MASTER']['k3s_token'] is defined
+
 - name: Install K3s on worker nodes
   shell: |
-    curl -sfL https://get.k3s.io | K3S_URL="https://{{ hostvars['MASTER']['ansible_host'] }}:6443" K3S_TOKEN="{{ hostvars['MASTER']['k3s_token']['stdout'] }}" sh -
+    curl -sfL https://get.k3s.io | K3S_URL="https://{{ hostvars['MASTER']['ansible_host'] }}:6443" K3S_TOKEN="{{ k3s_node_token }}" K3S_NODE_NAME="{{ inventory_hostname }}" sh -
   when: inventory_hostname != 'MASTER'

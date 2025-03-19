@@ -40,7 +40,9 @@ WORKER2
 ```
 
 Important notes about the inventory:
-- The master node must be named 'MASTER' in the inventory
+- The master node MUST be named 'MASTER' in the inventory (case-sensitive)
+- Worker nodes can have any name, but should not be named 'MASTER'
+- The master node must be accessible by all worker nodes on port 6443
 - Worker nodes will automatically join the cluster using the master's token
 
 ## Example Playbook
@@ -62,9 +64,23 @@ Important notes about the inventory:
 
 The role performs the following:
 1. Installs required dependencies (curl, apt-transport-https, ca-certificates)
-2. Installs K3s on the master node with proper kubeconfig permissions
+2. Installs K3s on the master node with:
+   - Proper kubeconfig permissions
+   - Node IP configuration using the inventory's ansible_host
+   - API server bound to the node's IP instead of localhost
 3. Retrieves the K3s token from the master node
-4. Installs K3s on worker nodes and joins them to the cluster
+4. Installs K3s on worker nodes and joins them to the cluster with:
+   - Proper node naming using inventory_hostname
+   - Connection to master using master's ansible_host IP
+
+### Network Configuration
+
+The role automatically configures:
+- Master node API server to bind to its ansible_host IP
+- Worker nodes to connect to master using its ansible_host IP
+- Each node is configured with its proper hostname from inventory
+
+This ensures proper cluster networking and node communication.
 
 ## Post-Installation
 
