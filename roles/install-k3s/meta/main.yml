@@ -1,0 +1,27 @@
+---
+galaxy_info:
+  role_name: install_k3s
+  author: WFHT
+  description: Installs K3s lightweight Kubernetes distribution on master and worker nodes
+  license: MIT
+  min_ansible_version: "2.9"
+
+  platforms:
+    - name: Ubuntu
+      versions:
+        - all
+    - name: Debian
+      versions:
+        - all
+    - name: EL  # Enterprise Linux (RHEL, CentOS, Rocky)
+      versions:
+        - all
+
+  galaxy_tags:
+    - system
+    - kubernetes
+    - k3s
+    - container
+    - orchestration
+
+dependencies: []

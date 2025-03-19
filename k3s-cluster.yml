@@ -1,0 +1,10 @@
+- hosts: all
+  become: true
+  roles:
+    - update-packages
+    - install-docker
+
+- hosts: all
+  become: true
+  roles:
+    - install-k3s
