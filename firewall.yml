@@ -1,0 +1,10 @@
+---
+- name: Setup Firewall
+  hosts: all
+  become: yes
+
+  vars:
+    roles_path: "{{ playbook_dir }}/roles"
+
+  roles:
+    - app-firewall

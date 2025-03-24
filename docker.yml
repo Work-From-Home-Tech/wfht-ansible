@@ -1,0 +1,10 @@
+---
+- name: Install Docker-CE and tailscale
+  hosts: all
+  become: true
+
+  vars:
+    roles_path: "{{ playbook_dir }}/roles"
+
+  roles:
+  - role: install-docker

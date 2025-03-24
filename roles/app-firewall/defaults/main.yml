@@ -1,0 +1,11 @@
+---
+
+# By default, allow these TCP ports
+allowed_tcp_ports:
+  - 22  # SSH
+  - 80  # HTTP
+  - 443 # HTTPS
+
+# By default, allow these UDP ports
+allowed_udp_ports:
+  - 51820 # WireGuard VPN

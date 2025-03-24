@@ -1,0 +1,35 @@
+---
+- name: Determine OS family
+  ansible.builtin.setup:
+    filter: ansible_os_family
+  
+- name: Include OS-specific variables
+  include_vars: "{{ item }}"
+  with_first_found:
+    - "{{ ansible_os_family }}.yml"
+    - "default.yml"
+
+- name: Include OS-specific tasks
+  include_tasks: "{{ ansible_os_family }}.yml"
+
+- name: Ensure firewall is started and enabled
+  service:
+    name: "{{ firewall_service }}"
+    state: started
+    enabled: yes
+
+- name: Configure SSH to only allow certificate authentication
+  lineinfile:
+    path: /etc/ssh/sshd_config
+    regexp: "{{ item.regexp }}"
+    line: "{{ item.line }}"
+    state: present
+  loop:
+    - { regexp: '^#?PasswordAuthentication', line: 'PasswordAuthentication no' }
+    - { regexp: '^#?ChallengeResponseAuthentication', line: 'ChallengeResponseAuthentication no' }
+    - { regexp: '^#?PubkeyAuthentication', line: 'PubkeyAuthentication yes' }
+  notify: restart sshd
+
+- name: Notify about firewall and SSH configuration
+  debug:
+    msg: "Firewall has been configured to allow traffic only on ports 80, 443, and 22. SSH has been configured to only allow certificate authentication."

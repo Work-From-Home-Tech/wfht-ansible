@@ -1,0 +1,44 @@
+---
+# roles/firewall/tasks/RedHat.yml
+
+- name: Install firewalld on Red Hat
+  yum:
+    name: firewalld
+    state: present
+
+- name: Clear existing firewalld rules
+  firewalld:
+    permanent: yes
+    state: disabled
+    immediate: yes
+  ignore_errors: true
+
+- name: Configure SSH access first
+  firewalld:
+    port: '22/tcp'
+    permanent: yes
+    state: enabled
+    immediate: yes
+
+- name: Allow HTTP and HTTPS traffic
+  firewalld:
+    port: "{{ item }}/tcp"
+    permanent: yes
+    state: enabled
+    immediate: yes
+  loop:
+    - '80'
+    - '443'
+
+- name: Allow UDP traffic on port 51820
+  firewalld:
+    port: '51820/udp'
+    permanent: yes
+    state: enabled
+    immediate: yes
+
+- name: Enable firewalld
+  firewalld:
+    permanent: yes
+    state: enabled
+    immediate: yes

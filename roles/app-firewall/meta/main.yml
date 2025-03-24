@@ -1,0 +1,22 @@
+---
+# roles/firewall/meta/main.yml
+
+dependencies: []
+
+galaxy_info:
+  role_name: firewall
+  author: Work From Home Tech
+  description: Configures firewall on Ubuntu and Red Hat systems
+  license: MIT
+  min_ansible_version: "2.9"
+  platforms:
+    - name: Ubuntu
+      versions:
+        - all
+    - name: EL
+      versions:
+        - all
+  galaxy_tags:
+    - security
+    - firewall
+    - networking

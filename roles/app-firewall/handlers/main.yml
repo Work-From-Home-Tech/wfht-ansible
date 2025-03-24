@@ -1,0 +1,15 @@
+---
+
+- name: enable ufw
+  ufw:
+    state: enabled
+
+- name: restart firewalld
+  service:
+    name: firewalld
+    state: restarted
+
+- name: restart sshd
+  service:
+    name: "{{ 'ssh' if ansible_os_family == 'Debian' else 'sshd' }}"
+    state: restarted
