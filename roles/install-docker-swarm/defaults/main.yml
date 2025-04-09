@@ -1,0 +1,11 @@
+---
+# defaults file for install-docker-swarm
+# These are default values that can be overridden by users
+
+# Docker Swarm configuration
+swarm_manager_port: 2377
+swarm_enable_autolock: false
+swarm_availability: "active"  # Options: active, pause, drain
+
+# Docker daemon configuration
+docker_daemon_options: {}

@@ -1,0 +1,11 @@
+[docker_swarm_cluster]
+MANAGER ansible_host=192.168.1.10
+WORKER1 ansible_host=192.168.1.11
+WORKER2 ansible_host=192.168.1.12
+
+[docker_swarm_manager]
+MANAGER
+
+[docker_swarm_workers]
+WORKER1
+WORKER2
