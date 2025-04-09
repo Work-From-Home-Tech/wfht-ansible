@@ -1,38 +1,102 @@
-Role Name
-=========
+# Ansible Role: install-golang
 
-A brief description of the role goes here.
+This Ansible role installs and configures Go (Golang) programming language on Linux systems. It provides options for installing specific versions, setting up the Go workspace, and configuring environment variables.
 
-Requirements
-------------
+## Requirements
 
-Any pre-requisites that may not be covered by Ansible itself or the role should be mentioned here. For instance, if the role uses the EC2 module, it may be a good idea to mention in this section that the boto package is required.
+- Ansible 2.1 or higher
+- Root access on target systems
+- Supported operating systems:
+  - Debian/Ubuntu
+  - RedHat/CentOS/Rocky Linux
 
-Role Variables
---------------
+## Role Variables
 
-A description of the settable variables for this role should go here, including any variables that are in defaults/main.yml, vars/main.yml, and any variables that can/should be set via parameters to the role. Any variables that are read from other roles and/or the global scope (ie. hostvars, group vars, etc.) should be mentioned here as well.
+| Variable | Description | Default |
+|----------|-------------|---------|
+| `golang_version` | Go version to install | `1.21.0` |
+| `golang_download_location` | Temporary download location | `/tmp` |
+| `golang_install_dir` | Installation directory | `/usr/local` |
+| `golang_gopath` | GOPATH directory | `$HOME/go` |
+| `golang_bin_path` | Add Go binaries to PATH | `true` |
+| `golang_remove_tarball` | Remove the tarball after installation | `true` |
+| `golang_install_profile` | Whether to add Go environment variables to profile | `true` |
+| `golang_users` | List of users to configure Go environment for | `[]` |
 
-Dependencies
-------------
+## Dependencies
 
-A list of other roles hosted on Galaxy should go here, plus any details in regards to parameters that may need to be set for other roles, or variables that are used from other roles.
+None
 
-Example Playbook
-----------------
+## Example Playbook
 
-Including an example of how to use your role (for instance, with variables passed in as parameters) is always nice for users too:
+Basic usage:
+```yaml
+- hosts: servers
+  become: true
+  roles:
+    - role: install-golang
+```
 
-    - hosts: servers
-      roles:
-         - { role: username.rolename, x: 42 }
+Installing a specific version:
+```yaml
+- hosts: servers
+  become: true
+  vars:
+    golang_version: "1.20.7"
+  roles:
+    - role: install-golang
+```
 
-License
--------
+Advanced configuration:
+```yaml
+- hosts: servers
+  become: true
+  vars:
+    golang_version: "1.21.0"
+    golang_install_dir: "/opt/go"
+    golang_gopath: "/opt/go-workspace"
+    golang_users:
+      - username: developer1
+        gopath: "/home/developer1/projects/go"
+      - username: developer2
+  roles:
+    - role: install-golang
+```
 
-BSD
+## Installation Process
 
-Author Information
-------------------
+The role performs the following:
 
-An optional section for the role authors to include contact information, or a website (HTML is not allowed).
+1. Downloads the specified Go version from the official website
+2. Extracts the archive to the installation directory
+3. Sets up environment variables (GOROOT, GOPATH, PATH)
+4. Configures user profiles with Go environment settings
+5. Creates the GOPATH directory structure if it doesn't exist
+
+## Verification
+
+After installation, you can verify Go is installed correctly by:
+
+```bash
+$ go version
+go version go1.21.0 linux/amd64
+```
+
+## Workspace Structure
+
+The role sets up the standard Go workspace structure:
+
+```
+$GOPATH/
+├── bin/    # Compiled binaries
+├── pkg/    # Package objects
+└── src/    # Source code
+```
+
+## License
+
+MIT
+
+## Author Information
+
+Created by WFHT

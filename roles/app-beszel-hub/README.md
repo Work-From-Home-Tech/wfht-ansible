@@ -1,38 +1,70 @@
-Role Name
-=========
+# Ansible Role: app-beszel-hub
 
-A brief description of the role goes here.
+This Ansible role deploys Beszel Hub, a monitoring and management solution for Docker environments, using Docker Compose. The role sets up both the Beszel Hub server and the Beszel agent for collecting metrics from the host system.
 
-Requirements
-------------
+## Requirements
 
-Any pre-requisites that may not be covered by Ansible itself or the role should be mentioned here. For instance, if the role uses the EC2 module, it may be a good idea to mention in this section that the boto package is required.
+- Ansible 2.1 or higher
+- Docker installed on the target system
+- Docker Compose installed on the target system
 
-Role Variables
---------------
+## Role Variables
 
-A description of the settable variables for this role should go here, including any variables that are in defaults/main.yml, vars/main.yml, and any variables that can/should be set via parameters to the role. Any variables that are read from other roles and/or the global scope (ie. hostvars, group vars, etc.) should be mentioned here as well.
+| Variable | Description | Default |
+|----------|-------------|---------|
+| `compose_dir` | Directory where the Docker Compose file will be placed | Required, no default |
 
-Dependencies
-------------
+## Dependencies
 
-A list of other roles hosted on Galaxy should go here, plus any details in regards to parameters that may need to be set for other roles, or variables that are used from other roles.
+- Requires Docker to be installed (recommend using the `install-docker` role first)
 
-Example Playbook
-----------------
+## Example Playbook
 
-Including an example of how to use your role (for instance, with variables passed in as parameters) is always nice for users too:
+Basic usage:
+```yaml
+- hosts: servers
+  become: true
+  vars:
+    compose_dir: "/opt/beszel"
+  roles:
+    - role: install-docker
+    - role: app-beszel-hub
+```
 
-    - hosts: servers
-      roles:
-         - { role: username.rolename, x: 42 }
+## Installation Process
 
-License
--------
+The role performs the following:
 
-BSD
+1. Creates the specified directory for Docker Compose files
+2. Copies the Docker Compose configuration to the target system
+3. Starts the Beszel Hub and agent containers using Docker Compose
 
-Author Information
-------------------
+## Deployed Services
 
-An optional section for the role authors to include contact information, or a website (HTML is not allowed).
+### Beszel Hub
+- Container name: `beszel`
+- Port: 8090
+- Persistent data stored in `./beszel_data` within the compose directory
+- Web interface accessible at http://[server-ip]:8090
+
+### Beszel Agent
+- Container name: `beszel-agent`
+- Runs in host network mode
+- Monitors the Docker host
+- Collects system metrics and Docker container information
+- Communicates with the Beszel Hub
+
+## Configuration Notes
+
+- The agent requires access to the Docker socket to monitor containers
+- The default agent port is 45876
+- You may need to configure the `KEY` environment variable in the compose file for secure communication
+- For disk I/O statistics, uncomment and set the `FILESYSTEM` environment variable in the compose file
+
+## License
+
+MIT
+
+## Author Information
+
+Created by WFHT

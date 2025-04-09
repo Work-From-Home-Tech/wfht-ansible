@@ -1,38 +1,83 @@
-Role Name
-=========
+# Ansible Role: app-wordpress
 
-A brief description of the role goes here.
+This Ansible role deploys WordPress using Docker Compose, setting up both the WordPress application and a MySQL database with persistent storage.
 
-Requirements
-------------
+## Requirements
 
-Any pre-requisites that may not be covered by Ansible itself or the role should be mentioned here. For instance, if the role uses the EC2 module, it may be a good idea to mention in this section that the boto package is required.
+- Ansible 2.1 or higher
+- Docker installed on the target system
+- Docker Compose installed on the target system
 
-Role Variables
---------------
+## Role Variables
 
-A description of the settable variables for this role should go here, including any variables that are in defaults/main.yml, vars/main.yml, and any variables that can/should be set via parameters to the role. Any variables that are read from other roles and/or the global scope (ie. hostvars, group vars, etc.) should be mentioned here as well.
+| Variable | Description | Default |
+|----------|-------------|---------|
+| `compose_dir` | Directory where the Docker Compose file will be placed | Required, no default |
 
-Dependencies
-------------
+## Dependencies
 
-A list of other roles hosted on Galaxy should go here, plus any details in regards to parameters that may need to be set for other roles, or variables that are used from other roles.
+- Requires Docker to be installed (recommend using the `install-docker` role first)
 
-Example Playbook
-----------------
+## Example Playbook
 
-Including an example of how to use your role (for instance, with variables passed in as parameters) is always nice for users too:
+Basic usage:
+```yaml
+- hosts: servers
+  become: true
+  vars:
+    compose_dir: "/opt/wordpress"
+  roles:
+    - role: install-docker
+    - role: app-wordpress
+```
 
-    - hosts: servers
-      roles:
-         - { role: username.rolename, x: 42 }
+## Installation Process
 
-License
--------
+The role performs the following:
 
-BSD
+1. Creates the specified directory for Docker Compose files
+2. Copies the Docker Compose configuration to the target system
+3. Starts the WordPress and MySQL containers using Docker Compose
 
-Author Information
-------------------
+## Deployed Services
 
-An optional section for the role authors to include contact information, or a website (HTML is not allowed).
+### WordPress
+- Container: WordPress official image
+- Port: 8080 (accessible at http://[server-ip]:8080)
+- Persistent storage for WordPress files
+- Default admin interface at http://[server-ip]:8080/wp-admin
+
+### MySQL Database
+- Container: MySQL 8.0
+- Not exposed to the host network
+- Persistent storage for database files
+- Pre-configured with WordPress database and user
+
+## Configuration Notes
+
+- Default database name: `wordpress`
+- Default database user: `wfht`
+- Default database password: `WVn8lM7d8yTafbXHKw8GEQFyAmk=`
+- MySQL root password is randomly generated for security
+
+## Security Considerations
+
+- The default database credentials should be changed for production use
+- Consider using a reverse proxy with HTTPS for production deployments
+- Regularly update the WordPress and MySQL images to receive security patches
+
+## Post-Installation
+
+After installation:
+1. Access WordPress at http://[server-ip]:8080
+2. Complete the WordPress setup wizard
+3. Install necessary plugins and themes
+4. Configure WordPress settings as needed
+
+## License
+
+MIT
+
+## Author Information
+
+Created by Wendell Jefferson, Work From Home Tech

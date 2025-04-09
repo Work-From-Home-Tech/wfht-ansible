@@ -1,38 +1,85 @@
-Role Name
-=========
+# Ansible Role: app-firewall
 
-A brief description of the role goes here.
+This Ansible role configures system firewalls and hardens SSH access on both Debian/Ubuntu (using UFW) and RedHat-based systems (using firewalld).
 
-Requirements
-------------
+## Requirements
 
-Any pre-requisites that may not be covered by Ansible itself or the role should be mentioned here. For instance, if the role uses the EC2 module, it may be a good idea to mention in this section that the boto package is required.
+- Ansible 2.9 or higher
+- Root access on target systems
+- Supported operating systems:
+  - Debian/Ubuntu
+  - RedHat/Rocky Linux/CentOS
 
-Role Variables
---------------
+## Role Variables
 
-A description of the settable variables for this role should go here, including any variables that are in defaults/main.yml, vars/main.yml, and any variables that can/should be set via parameters to the role. Any variables that are read from other roles and/or the global scope (ie. hostvars, group vars, etc.) should be mentioned here as well.
+| Variable | Description | Default |
+|----------|-------------|---------|
+| `allowed_tcp_ports` | List of TCP ports to allow through the firewall | `[22, 80, 443]` |
+| `allowed_udp_ports` | List of UDP ports to allow through the firewall | `[51820]` |
 
-Dependencies
-------------
+## Dependencies
 
-A list of other roles hosted on Galaxy should go here, plus any details in regards to parameters that may need to be set for other roles, or variables that are used from other roles.
+None
 
-Example Playbook
-----------------
+## Example Playbook
 
-Including an example of how to use your role (for instance, with variables passed in as parameters) is always nice for users too:
+Basic usage with default settings:
+```yaml
+- hosts: servers
+  become: true
+  roles:
+    - role: app-firewall
+```
 
-    - hosts: servers
-      roles:
-         - { role: username.rolename, x: 42 }
+Customizing allowed ports:
+```yaml
+- hosts: servers
+  become: true
+  roles:
+    - role: app-firewall
+      vars:
+        allowed_tcp_ports:
+          - 22   # SSH
+          - 80   # HTTP
+          - 443  # HTTPS
+          - 8080 # Custom application
+        allowed_udp_ports:
+          - 51820 # WireGuard VPN
+          - 53    # DNS
+```
 
-License
--------
+## Installation Process
 
-BSD
+The role performs the following:
 
-Author Information
-------------------
+1. Installs the appropriate firewall package:
+   - UFW on Debian/Ubuntu systems
+   - firewalld on RedHat-based systems
 
-An optional section for the role authors to include contact information, or a website (HTML is not allowed).
+2. Configures the firewall to:
+   - Allow incoming traffic on specified TCP ports (default: 22, 80, 443)
+   - Allow incoming traffic on specified UDP ports (default: 51820)
+   - Allow all outgoing traffic
+   - Deny all other incoming traffic
+
+3. Hardens SSH configuration:
+   - Disables password authentication
+   - Disables challenge-response authentication
+   - Enables public key authentication only
+
+4. Ensures the firewall service is started and enabled at boot
+
+## Security Considerations
+
+This role implements several security best practices:
+- Restricts SSH access to public key authentication only
+- Follows the principle of least privilege by only opening necessary ports
+- Enables firewall by default with a deny-all policy for incoming traffic
+
+## License
+
+MIT
+
+## Author Information
+
+Created by WFHT
