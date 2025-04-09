@@ -1,0 +1,4 @@
+---
+# vars file for install-docker-swarm
+swarm_manager_port: 2377
+swarm_manager_name: "MANAGER"

@@ -1,0 +1,61 @@
+---
+# Install Docker Swarm dependencies
+- name: Install Docker Swarm dependencies (Debian/Ubuntu)
+  apt:
+    name:
+      - curl
+      - apt-transport-https
+      - ca-certificates
+    state: present
+    update_cache: true
+  when: ansible_os_family == "Debian"
+
+- name: Install Docker Swarm dependencies (RedHat/Rocky)
+  dnf:
+    name:
+      - curl
+      - ca-certificates
+    state: present
+    update_cache: true
+  when: ansible_os_family == "RedHat"
+
+# Initialize Docker Swarm on manager node
+- name: Initialize Docker Swarm on manager node
+  shell: docker swarm init --advertise-addr {{ ansible_host }}
+  args:
+    creates: /var/lib/docker/swarm/state.json
+  when: inventory_hostname == 'MANAGER'
+  register: swarm_init
+
+# Get swarm join token for workers
+- name: Get swarm join token for workers
+  shell: docker swarm join-token worker -q
+  register: swarm_token
+  when: inventory_hostname == 'MANAGER'
+
+# Share token with all hosts
+- name: Share token with all hosts
+  set_fact:
+    swarm_worker_token: "{{ hostvars['MANAGER']['swarm_token']['stdout'] }}"
+  when: hostvars['MANAGER']['swarm_token'] is defined
+
+# Join worker nodes to the swarm
+- name: Join worker nodes to the swarm
+  shell: >
+    docker swarm join 
+    --token {{ swarm_worker_token }} 
+    {{ hostvars['MANAGER']['ansible_host'] }}:2377
+  args:
+    creates: /var/lib/docker/swarm/state.json
+  when: inventory_hostname != 'MANAGER'
+
+# Verify swarm status
+- name: Get swarm node status on manager
+  shell: docker node ls
+  register: node_status
+  when: inventory_hostname == 'MANAGER'
+
+- name: Display swarm node status
+  debug:
+    var: node_status.stdout_lines
+  when: inventory_hostname == 'MANAGER'
