@@ -1,0 +1,30 @@
+---
+galaxy_info:
+  role_name: install_rke2
+  author: WFHT
+  description: Installs RKE2 Kubernetes and Longhorn storage prerequisites
+  license: MIT
+  min_ansible_version: "2.9"
+  platforms:
+    - name: Ubuntu
+      versions:
+        - focal
+        - jammy
+    - name: Debian
+      versions:
+        - bullseye
+        - bookworm
+    - name: EL
+      versions:
+        - "8"
+        - "9"
+  galaxy_tags:
+    - kubernetes
+    - rke2
+    - rancher
+    - container
+    - orchestration
+    - longhorn
+    - storage
+
+dependencies: []

@@ -1,0 +1,14 @@
+---
+# RKE2 Server Configuration
+node-name: {{ inventory_hostname }}
+node-ip: {{ ansible_host }}
+advertise-address: {{ ansible_host }}
+tls-san:
+  - {{ ansible_host }}
+  - {{ ansible_fqdn | default(inventory_hostname) }}
+write-kubeconfig-mode: "0644"
+{% if rke2_server_config %}
+{% for key, value in rke2_server_config.items() %}
+{{ key }}: {{ value }}
+{% endfor %}
+{% endif %}

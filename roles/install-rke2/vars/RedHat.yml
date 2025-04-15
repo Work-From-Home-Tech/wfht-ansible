@@ -1,0 +1,3 @@
+---
+# RedHat/Rocky Linux specific variables
+iscsid_service_name: iscsid

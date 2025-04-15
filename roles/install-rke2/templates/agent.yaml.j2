@@ -1,0 +1,11 @@
+---
+# RKE2 Agent Configuration
+node-name: {{ inventory_hostname }}
+node-ip: {{ ansible_host }}
+server: https://{{ hostvars['MASTER']['ansible_host'] }}:9345
+token: {{ rke2_node_token }}
+{% if rke2_agent_config %}
+{% for key, value in rke2_agent_config.items() %}
+{{ key }}: {{ value }}
+{% endfor %}
+{% endif %}

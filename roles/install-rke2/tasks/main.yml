@@ -1,0 +1,141 @@
+---
+# Main tasks file for install-rke2 role
+
+- name: Include OS-specific variables
+  include_vars: "{{ ansible_os_family }}.yml"
+  when: ansible_os_family == "Debian" or ansible_os_family == "RedHat"
+
+- name: Install RKE2 dependencies (Debian/Ubuntu)
+  apt:
+    name:
+      - curl
+      - apt-transport-https
+      - ca-certificates
+      - gnupg
+    state: present
+    update_cache: true
+  when: ansible_os_family == "Debian"
+
+- name: Install RKE2 dependencies (RedHat/Rocky)
+  dnf:
+    name:
+      - curl
+      - ca-certificates
+    state: present
+    update_cache: true
+  when: ansible_os_family == "RedHat"
+
+- name: Install Longhorn prerequisites (Debian/Ubuntu)
+  apt:
+    name: "{{ longhorn_prerequisites.debian }}"
+    state: present
+  when: ansible_os_family == "Debian"
+
+- name: Install Longhorn prerequisites (RedHat/Rocky)
+  dnf:
+    name: "{{ longhorn_prerequisites.redhat }}"
+    state: present
+  when: ansible_os_family == "RedHat"
+
+- name: Enable and start iscsid service
+  systemd:
+    name: iscsid
+    state: started
+    enabled: true
+
+- name: Create RKE2 config directory
+  file:
+    path: "{{ rke2_config_dir }}"
+    state: directory
+    mode: '0755'
+
+- name: Create RKE2 server config file on master
+  template:
+    src: config.yaml.j2
+    dest: "{{ rke2_config_dir }}/config.yaml"
+    mode: '0644'
+  when: inventory_hostname == 'MASTER'
+  register: server_config
+  notify: restart rke2-server
+
+- name: Install RKE2 on master
+  shell: |
+    curl -sfL https://get.rke2.io | INSTALL_RKE2_TYPE=server INSTALL_RKE2_CHANNEL={{ rke2_channel }} {% if rke2_version != "" %}INSTALL_RKE2_VERSION={{ rke2_version }}{% endif %} sh -
+  args:
+    creates: /usr/local/bin/rke2
+  when: inventory_hostname == 'MASTER'
+
+- name: Enable and start RKE2 server service on master
+  systemd:
+    name: rke2-server
+    state: started
+    enabled: true
+  when: inventory_hostname == 'MASTER'
+
+- name: Wait for RKE2 server to be ready
+  wait_for:
+    path: "{{ rke2_data_dir }}/server/token"
+    state: present
+    timeout: 300
+  when: inventory_hostname == 'MASTER'
+
+- name: Get master node information
+  set_fact:
+    master_node: "{{ groups['rke2_cluster'] | select('match', '^MASTER$') | first }}"
+  run_once: true
+
+- name: Get RKE2 token
+  shell: cat {{ rke2_data_dir }}/server/token
+  register: rke2_token
+  when: inventory_hostname == 'MASTER'
+
+- name: Share token with all hosts
+  set_fact:
+    rke2_node_token: "{{ hostvars['MASTER']['rke2_token']['stdout'] }}"
+  when: hostvars['MASTER']['rke2_token'] is defined
+
+- name: Create RKE2 agent config file on worker nodes
+  template:
+    src: agent.yaml.j2
+    dest: "{{ rke2_config_dir }}/config.yaml"
+    mode: '0644'
+  when: inventory_hostname != 'MASTER'
+  register: agent_config
+  notify: restart rke2-agent
+
+- name: Install RKE2 on worker nodes
+  shell: |
+    curl -sfL https://get.rke2.io | INSTALL_RKE2_TYPE=agent INSTALL_RKE2_CHANNEL={{ rke2_channel }} {% if rke2_version != "" %}INSTALL_RKE2_VERSION={{ rke2_version }}{% endif %} sh -
+  args:
+    creates: /usr/local/bin/rke2
+  when: inventory_hostname != 'MASTER'
+
+- name: Enable and start RKE2 agent service on worker nodes
+  systemd:
+    name: rke2-agent
+    state: started
+    enabled: true
+  when: inventory_hostname != 'MASTER'
+
+- name: Create symlink for kubectl on master
+  file:
+    src: /var/lib/rancher/rke2/bin/kubectl
+    dest: /usr/local/bin/kubectl
+    state: link
+  when: inventory_hostname == 'MASTER'
+
+- name: Set permissions on kubeconfig
+  file:
+    path: "{{ rke2_config_dir }}/rke2.yaml"
+    mode: '0644'
+  when: inventory_hostname == 'MASTER'
+
+- name: Wait for nodes to be ready
+  shell: |
+    /var/lib/rancher/rke2/bin/kubectl --kubeconfig={{ rke2_config_dir }}/rke2.yaml get nodes | grep {{ inventory_hostname }} | grep -v NotReady
+  register: node_ready
+  until: node_ready.rc == 0
+  retries: 30
+  delay: 10
+  when: inventory_hostname == 'MASTER'
+  ignore_errors: true
