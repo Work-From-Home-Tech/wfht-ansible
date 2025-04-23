@@ -16,5 +16,32 @@ Container roles will always install as docker compose files in the /opt/stacks d
 ### Playbooks
 
 docker-tailscale.yml - Installs Docker-CE engine and tailscale. You will have to provide a node token within the role.    
-update_packages.yml - Updates all packages on Ubuntu and Red Hat nodes.  
- 
+update_packages.yml - Updates all packages on Ubuntu and Red Hat nodes.
+
+## Available Roles
+
+### Infrastructure & Platform Roles
+- [install-docker](roles/install-docker/README.md) - Docker CE installation
+- [install-k3s](roles/install-k3s/README.md) - Lightweight Kubernetes (K3s) cluster setup
+- [install-rke2](roles/install-rke2/README.md) - RKE2 Kubernetes cluster with Longhorn storage
+- [install-docker-swarm](roles/install-docker-swarm/README.md) - Docker Swarm cluster setup
+- [install-kvm](roles/install-kvm/README.md) - KVM virtualization platform
+- [install-lxd](roles/install-lxd/README.md) - LXD container platform
+
+### Application Deployment Roles
+- [app-beszel-hub](roles/app-beszel-hub/README.md) - Beszel Hub deployment
+- [app-paperless-ngx](roles/app-paperless-ngx/README.md) - Paperless-ngx document management
+- [app-wordpress](roles/app-wordpress/README.md) - WordPress deployment
+- [app-tailscale](roles/app-tailscale/README.md) - Tailscale VPN setup
+- [install-authentik](roles/install-authentik/README.md) - Authentik identity management
+- [install-chatbot](roles/install-chatbot/README.md) - Chat bot service deployment
+
+### Development Tools
+- [install-golang](roles/install-golang/README.md) - Go language installation
+- [install-mkdocs](roles/install-mkdocs/README.md) - MkDocs documentation tool
+- [install-caddy](roles/install-caddy/README.md) - Caddy web server
+
+### System Management
+- [update-packages](roles/update-packages/README.md) - System package updates
+- [app-firewall](roles/app-firewall/README.md) - Firewall management
+- [install-ca-cert](roles/install-ca-cert/README.md) - CA certificate installation
