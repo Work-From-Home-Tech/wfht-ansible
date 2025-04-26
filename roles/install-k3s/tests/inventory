@@ -1,6 +1,14 @@
-[masters]
-MASTER ansible_host=192.168.1.100
+# Sample inventory for K3s HA cluster
 
-[workers]
-WORKER1 ansible_host=192.168.1.101
-WORKER2 ansible_host=192.168.1.102
+[k3s_cluster:children]
+k3s_masters
+k3s_workers
+
+[k3s_masters]
+MASTER1 ansible_host=192.168.1.10
+MASTER2 ansible_host=192.168.1.11
+MASTER3 ansible_host=192.168.1.12
+
+[k3s_workers]
+WORKER1 ansible_host=192.168.1.13
+WORKER2 ansible_host=192.168.1.14

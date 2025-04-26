@@ -1,3 +1,9 @@
+# K3s Cluster Deployment with HA Control Plane
+# Requires:
+# - 3+ master nodes in [k3s_masters] group
+# - 1+ worker nodes in [k3s_workers] group
+# - All nodes in [k3s_cluster] group
+
 - hosts: all
   become: true
 

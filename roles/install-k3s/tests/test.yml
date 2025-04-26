@@ -1,5 +1,12 @@
 ---
-- hosts: localhost
-  remote_user: root
+# Test playbook for K3s HA cluster
+- hosts: all
+  become: true
+  roles:
+    - update-packages
+    - install-docker
+
+- hosts: all
+  become: true
   roles:
     - install-k3s

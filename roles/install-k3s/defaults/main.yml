@@ -1,2 +1,14 @@
 ---
 # defaults file for install-k3s
+
+# K3s installation settings
+k3s_token_file: /var/lib/rancher/k3s/server/node-token
+k3s_kubeconfig_file: /etc/rancher/k3s/k3s.yaml
+k3s_kubeconfig_mode: "644"
+
+# HA control plane settings
+k3s_ha_enabled: true
+k3s_primary_master: "{{ groups['k3s_masters'][0] if groups['k3s_masters'] is defined else 'MASTER1' }}"
+k3s_server_args_common: "--node-ip {{ ansible_host }} --advertise-address {{ ansible_host }} --bind-address {{ ansible_host }}"
+k3s_server_args_primary: "{{ k3s_server_args_common }} --cluster-init"
+k3s_server_args_secondary: "{{ k3s_server_args_common }} --server https://{{ hostvars[k3s_primary_master]['ansible_host'] }}:6443"

@@ -17,29 +17,50 @@
     update_cache: true
   when: ansible_os_family == "RedHat"
 
-- name: Install K3s on master
+# Primary master node installation
+- name: Install K3s on primary master node
   shell: |
-    curl -sfL https://get.k3s.io | INSTALL_K3S_EXEC="--write-kubeconfig-mode 644 --node-ip {{ ansible_host }} --advertise-address {{ ansible_host }} --bind-address {{ ansible_host }}" sh -
+    curl -sfL https://get.k3s.io | INSTALL_K3S_EXEC="--write-kubeconfig-mode {{ k3s_kubeconfig_mode }} {{ k3s_server_args_primary }}" sh -
   args:
     creates: /usr/local/bin/k3s
-  when: inventory_hostname == 'MASTER'
+  when: inventory_hostname == k3s_primary_master
+  register: k3s_primary_install
 
-- name: Get master node information
-  set_fact:
-    master_node: "{{ groups['k3s_cluster'] | select('match', '^MASTER$') | first }}"
-  run_once: true
+- name: Wait for primary master to be ready
+  pause:
+    seconds: 30
+  when: k3s_primary_install.changed and inventory_hostname == k3s_primary_master
 
-- name: Get K3s token
-  shell: cat /var/lib/rancher/k3s/server/node-token
-  register: k3s_token
-  when: inventory_hostname == 'MASTER'
+- name: Get K3s token from primary master
+  shell: cat {{ k3s_token_file }}
+  register: k3s_token_result
+  when: inventory_hostname == k3s_primary_master
 
 - name: Share token with all hosts
   set_fact:
-    k3s_node_token: "{{ hostvars['MASTER']['k3s_token']['stdout'] }}"
-  when: hostvars['MASTER']['k3s_token'] is defined
+    k3s_node_token: "{{ hostvars[k3s_primary_master]['k3s_token_result']['stdout'] }}"
+  when: hostvars[k3s_primary_master]['k3s_token_result'] is defined
 
+# Secondary master nodes installation
+- name: Install K3s on secondary master nodes
+  shell: |
+    curl -sfL https://get.k3s.io | INSTALL_K3S_EXEC="--write-kubeconfig-mode {{ k3s_kubeconfig_mode }} {{ k3s_server_args_secondary }}" K3S_TOKEN="{{ k3s_node_token }}" sh -
+  args:
+    creates: /usr/local/bin/k3s
+  when: 
+    - inventory_hostname in groups['k3s_masters'] 
+    - inventory_hostname != k3s_primary_master
+  register: k3s_secondary_install
+
+- name: Wait for secondary masters to be ready
+  pause:
+    seconds: 30
+  when: k3s_secondary_install.changed and inventory_hostname in groups['k3s_masters'] and inventory_hostname != k3s_primary_master
+
+# Worker nodes installation
 - name: Install K3s on worker nodes
   shell: |
-    curl -sfL https://get.k3s.io | K3S_URL="https://{{ hostvars['MASTER']['ansible_host'] }}:6443" K3S_TOKEN="{{ k3s_node_token }}" K3S_NODE_NAME="{{ inventory_hostname }}" sh -
-  when: inventory_hostname != 'MASTER'
+    curl -sfL https://get.k3s.io | K3S_URL="https://{{ hostvars[k3s_primary_master]['ansible_host'] }}:6443" K3S_TOKEN="{{ k3s_node_token }}" K3S_NODE_NAME="{{ inventory_hostname }}" sh -
+  args:
+    creates: /usr/local/bin/k3s
+  when: inventory_hostname not in groups['k3s_masters']
