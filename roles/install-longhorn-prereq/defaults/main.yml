@@ -1,0 +1,4 @@
+---
+# Default variables for install-longhorn-prereq role
+# Currently no variables are needed, but this file is included
+# for future extensibility

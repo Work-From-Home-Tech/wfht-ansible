@@ -1,0 +1,19 @@
+---
+# Handlers for install-longhorn-prereq role
+
+- name: restart iscsid
+  service:
+    name: iscsid
+    state: restarted
+
+- name: restart open-iscsi
+  service:
+    name: open-iscsi
+    state: restarted
+  when: ansible_os_family == "Debian"
+
+- name: restart iscsi
+  service:
+    name: iscsi
+    state: restarted
+  when: ansible_os_family == "RedHat"

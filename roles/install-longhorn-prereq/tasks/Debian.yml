@@ -1,0 +1,38 @@
+---
+- name: Update package cache
+  apt:
+    update_cache: yes
+    cache_valid_time: 3600
+
+- name: Install required packages for Longhorn
+  apt:
+    name:
+      - open-iscsi
+      - nfs-common
+      - curl
+      - util-linux
+      - cryptsetup
+    state: present
+
+- name: Ensure iscsid service is running and enabled
+  service:
+    name: iscsid
+    state: started
+    enabled: yes
+
+- name: Ensure open-iscsi service is running and enabled
+  service:
+    name: open-iscsi
+    state: started
+    enabled: yes
+
+- name: Load dm_crypt module
+  modprobe:
+    name: dm_crypt
+    state: present
+
+- name: Ensure dm_crypt module loads on boot
+  lineinfile:
+    path: /etc/modules
+    line: dm_crypt
+    create: yes

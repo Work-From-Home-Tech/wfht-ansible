@@ -1,0 +1,10 @@
+---
+- name: Test Longhorn Prerequisites Installation
+  hosts: all
+  become: true
+
+  vars:
+    roles_path: "{{ playbook_dir }}/roles"
+
+  roles:
+    - install-longhorn-prereq

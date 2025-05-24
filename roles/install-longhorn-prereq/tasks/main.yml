@@ -1,0 +1,41 @@
+---
+- name: Include OS-specific tasks
+  include_tasks: "{{ ansible_os_family }}.yml"
+
+- name: Check filesystem support
+  shell: findmnt -no FSTYPE /
+  register: root_fs_type
+  changed_when: false
+
+- name: Display filesystem warning if needed
+  debug:
+    msg: "WARNING: Root filesystem type '{{ root_fs_type.stdout }}' is not ext4 or xfs. This may cause issues with Longhorn storage controller."
+  when: root_fs_type.stdout not in ['ext4', 'xfs']
+
+- name: Verify required utilities are available
+  command: "which {{ item }}"
+  register: utils_check
+  changed_when: false
+  failed_when: utils_check.rc != 0
+  with_items:
+    - bash
+    - curl
+    - findmnt
+    - grep
+    - awk
+    - blkid
+    - lsblk
+
+- name: Check mount propagation support
+  shell: |
+    if grep -q 'shared' /proc/self/mountinfo; then
+      echo "Mount propagation is supported"
+    else
+      echo "Mount propagation may not be properly configured"
+    fi
+  register: mount_propagation_check
+  changed_when: false
+
+- name: Display mount propagation status
+  debug:
+    msg: "{{ mount_propagation_check.stdout }}"

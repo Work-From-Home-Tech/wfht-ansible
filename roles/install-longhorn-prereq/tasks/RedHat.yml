@@ -1,0 +1,33 @@
+---
+- name: Install required packages for Longhorn
+  yum:
+    name:
+      - iscsi-initiator-utils
+      - nfs-utils
+      - curl
+      - util-linux
+      - cryptsetup
+    state: present
+
+- name: Ensure iscsid service is running and enabled
+  service:
+    name: iscsid
+    state: started
+    enabled: yes
+
+- name: Ensure iscsi service is running and enabled
+  service:
+    name: iscsi
+    state: started
+    enabled: yes
+
+- name: Load dm_crypt module
+  modprobe:
+    name: dm_crypt
+    state: present
+
+- name: Ensure dm_crypt module loads on boot
+  copy:
+    dest: /etc/modules-load.d/dm_crypt.conf
+    content: dm_crypt
+    mode: '0644'
