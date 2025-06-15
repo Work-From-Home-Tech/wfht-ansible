@@ -32,7 +32,6 @@ The role provides several variables that can be customized:
 
 None, but the following roles are recommended to be run first:
 - update-packages
-- install-docker
 
 ## Inventory Setup
 
@@ -69,7 +68,6 @@ Important notes about the inventory:
   become: true
   roles:
     - update-packages
-    - install-docker
 
 - hosts: all
   become: true

@@ -6,7 +6,6 @@
     
   roles:
     - update-packages
-    - install-docker
 
 - hosts: all
   become: true

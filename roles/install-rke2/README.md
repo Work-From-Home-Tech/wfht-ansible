@@ -19,7 +19,6 @@ No variables are required as the role uses host groups to determine the installa
 
 None, but the following roles are recommended to be run first:
 - update-packages
-- install-docker
 
 ## Inventory Setup
 
@@ -52,7 +51,6 @@ Important notes about the inventory:
   become: true
   roles:
     - update-packages
-    - install-docker
 
 - hosts: all
   become: true
