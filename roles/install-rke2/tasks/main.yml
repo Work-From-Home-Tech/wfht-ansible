@@ -135,7 +135,7 @@
     /var/lib/rancher/rke2/bin/kubectl --kubeconfig={{ rke2_config_dir }}/rke2.yaml get nodes | grep {{ inventory_hostname }} | grep -v NotReady
   register: node_ready
   until: node_ready.rc == 0
-  retries: 30
+  retries: 3
   delay: 10
   when: inventory_hostname == 'MASTER'
   ignore_errors: true
