@@ -58,9 +58,15 @@
         state: present
         update_cache: true
     
+    - name: Start and enable Docker service
+      service:
+        name: docker
+        state: started
+        enabled: yes
+    
     - name: Add invoking user to the docker group
       user:
-        name: "{{ ansible_user }}"
+        name: "{{ ansible_env.SUDO_USER | default(ansible_user_id) | default(ansible_user) | default('root') }}"
         append: true
         groups: docker
 
@@ -72,7 +78,68 @@
 ##################
 - name: Install Docker on CentOS/RHEL
   block:
-    - name: Subscribe to CentOS Docker repository
+    - name: Detect Rocky Linux 10 for special handling
+      set_fact:
+        is_rocky_10: "{{ ansible_distribution == 'Rocky' and ansible_distribution_major_version == '10' }}"
+
+    - name: Install networking prerequisites for Rocky Linux 10
+      dnf:
+        name:
+          - iptables-services
+          - iptables-utils
+          - kernel-modules-extra
+        state: present
+      when: is_rocky_10 | bool
+
+    - name: Load required kernel modules for Docker networking
+      modprobe:
+        name: "{{ item }}"
+        state: present
+      loop:
+        - br_netfilter
+        - ip_tables
+        - ip6_tables
+        - iptable_nat
+        - iptable_filter
+      when: is_rocky_10 | bool
+
+    - name: Ensure kernel modules are loaded at boot
+      lineinfile:
+        path: /etc/modules-load.d/docker.conf
+        line: "{{ item }}"
+        create: yes
+      loop:
+        - br_netfilter
+        - ip_tables
+        - ip6_tables
+        - iptable_nat
+        - iptable_filter
+      when: is_rocky_10 | bool
+
+    - name: Configure sysctl for Docker networking
+      sysctl:
+        name: "{{ item.name }}"
+        value: "{{ item.value }}"
+        state: present
+        sysctl_set: yes
+        reload: yes
+      loop:
+        - { name: 'net.bridge.bridge-nf-call-iptables', value: '1' }
+        - { name: 'net.bridge.bridge-nf-call-ip6tables', value: '1' }
+        - { name: 'net.ipv4.ip_forward', value: '1' }
+      when: is_rocky_10 | bool
+
+    - name: Subscribe to Docker repository (Rocky Linux 10)
+      yum_repository:
+        name: docker-ce
+        description: Docker CE Repository
+        baseurl: https://download.docker.com/linux/rhel/9/x86_64/stable/
+        gpgcheck: yes
+        gpgkey: https://download.docker.com/linux/rhel/gpg
+        enabled: yes
+      when: is_rocky_10 | bool
+
+    - name: Subscribe to CentOS Docker repository (other RHEL variants)
       yum_repository:
         name: docker-ce
         description: Docker CE Repository
@@ -80,15 +147,48 @@
         gpgcheck: yes
         gpgkey: https://download.docker.com/linux/centos/gpg
         enabled: yes
+      when: not (is_rocky_10 | bool)
 
-    - name: Clean YUM cache
-      command: yum clean all
+    - name: Clean package cache
+      command: "{{ ansible_pkg_mgr }} clean all"
 
     - name: Install Docker packages on RHEL/CentOS
-      yum:
+      package:
         name: "{{ docker_packages_rhel }}"
         state: present
         update_cache: yes
+
+    - name: Create Docker daemon configuration directory
+      file:
+        path: /etc/docker
+        state: directory
+        mode: '0755'
+
+    - name: Configure Docker daemon for Rocky Linux 10
+      copy:
+        content: |
+          {
+            "iptables": true,
+            "ip6tables": true,
+            "experimental": false,
+            "live-restore": true,
+            "log-driver": "json-file",
+            "log-opts": {
+              "max-size": "10m",
+              "max-file": "3"
+            }
+          }
+        dest: /etc/docker/daemon.json
+        mode: '0644'
+      when: is_rocky_10 | bool
+      notify: restart docker
+
+    - name: Ensure iptables service is running (Rocky Linux 10)
+      systemd:
+        name: iptables
+        state: started
+        enabled: yes
+      when: is_rocky_10 | bool
 
     - name: Start and enable Docker service
       service:
@@ -98,7 +198,7 @@
 
     - name: Add invoking user to the docker group
       user:
-        name: "{{ ansible_user }}"
+        name: "{{ ansible_env.SUDO_USER | default(ansible_user_id) | default(ansible_user) | default('root') }}"
         append: true
         groups: docker
         
