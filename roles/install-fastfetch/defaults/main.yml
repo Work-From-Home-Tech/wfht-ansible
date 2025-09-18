@@ -1,0 +1,14 @@
+---
+# Default variables for install-fastfetch role
+
+# GitHub API URL for latest release
+fastfetch_github_api_url: "https://api.github.com/repos/fastfetch-cli/fastfetch/releases/latest"
+
+# Temporary directory for downloads
+fastfetch_temp_dir: "/tmp"
+
+# Whether to clean up downloaded packages after installation
+fastfetch_cleanup_downloads: true
+
+# Package architecture (currently only amd64 is supported)
+fastfetch_architecture: "amd64"

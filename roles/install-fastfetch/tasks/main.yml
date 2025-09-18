@@ -1,0 +1,13 @@
+---
+- name: Include OS-specific tasks
+  include_tasks: "{{ ansible_os_family }}.yml"
+
+- name: Verify fastfetch installation
+  command: fastfetch --version
+  register: fastfetch_version
+  changed_when: false
+  failed_when: fastfetch_version.rc != 0
+
+- name: Display fastfetch version
+  debug:
+    msg: "Fastfetch installed successfully: {{ fastfetch_version.stdout }}"

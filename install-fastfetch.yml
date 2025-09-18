@@ -1,0 +1,6 @@
+---
+- name: Install fastfetch on target hosts
+  hosts: all
+  become: true
+  roles:
+    - install-fastfetch

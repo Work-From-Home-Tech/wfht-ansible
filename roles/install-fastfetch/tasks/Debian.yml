@@ -1,0 +1,38 @@
+---
+- name: Get latest fastfetch release information
+  uri:
+    url: "{{ fastfetch_github_api_url }}"
+    method: GET
+    return_content: yes
+  register: fastfetch_release_info
+
+- name: Extract download URL for .deb package
+  set_fact:
+    fastfetch_deb_url: "{{ item.browser_download_url }}"
+  loop: "{{ fastfetch_release_info.json.assets }}"
+  when: item.name is match('fastfetch-linux-amd64\\.deb$')
+
+- name: Fail if .deb package not found
+  fail:
+    msg: "Could not find fastfetch-linux-amd64.deb in the latest release"
+  when: fastfetch_deb_url is not defined
+
+- name: Download fastfetch .deb package
+  get_url:
+    url: "{{ fastfetch_deb_url }}"
+    dest: "{{ fastfetch_temp_dir }}/fastfetch-linux-amd64.deb"
+    mode: '0644'
+    timeout: 30
+  register: fastfetch_download
+
+- name: Install fastfetch from .deb package
+  apt:
+    deb: "{{ fastfetch_temp_dir }}/fastfetch-linux-amd64.deb"
+    state: present
+  become: true
+
+- name: Clean up downloaded .deb package
+  file:
+    path: "{{ fastfetch_temp_dir }}/fastfetch-linux-amd64.deb"
+    state: absent
+  when: fastfetch_cleanup_downloads | bool
