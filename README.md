@@ -24,6 +24,7 @@ update_packages.yml - Updates all packages on Ubuntu and Red Hat nodes.
 - [install-docker](roles/install-docker/README.md) - Docker CE installation
 - [install-k3s](roles/install-k3s/README.md) - Lightweight Kubernetes (K3s) cluster setup
 - [install-rke2](roles/install-rke2/README.md) - RKE2 Kubernetes cluster with Longhorn storage
+- [install-longhorn-prereq](roles/install-longhorn-prereq/README.md) - Longhorn storage prerequisites
 - [install-docker-swarm](roles/install-docker-swarm/README.md) - Docker Swarm cluster setup
 - [install-kvm](roles/install-kvm/README.md) - KVM virtualization platform
 - [install-lxd](roles/install-lxd/README.md) - LXD container platform
@@ -45,3 +46,4 @@ update_packages.yml - Updates all packages on Ubuntu and Red Hat nodes.
 - [update-packages](roles/update-packages/README.md) - System package updates
 - [app-firewall](roles/app-firewall/README.md) - Firewall management
 - [install-ca-cert](roles/install-ca-cert/README.md) - CA certificate installation
+- [install-fastfetch](roles/install-fastfetch/README.md) - Fastfetch system information tool
