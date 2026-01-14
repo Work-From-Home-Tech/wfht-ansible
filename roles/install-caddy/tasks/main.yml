@@ -21,6 +21,35 @@
         - "tasks"
   tags: ["install"]
 
+- name: Ensure systemd override directory exists
+  ansible.builtin.file:
+    path: /etc/systemd/system/caddy.service.d
+    state: directory
+    owner: root
+    group: root
+    mode: "0755"
+  when: caddy_systemd_capabilities_enabled | bool
+  tags: ["config"]
+
+- name: Configure systemd capabilities for privileged ports
+  ansible.builtin.template:
+    src: caddy-override.conf.j2
+    dest: /etc/systemd/system/caddy.service.d/override.conf
+    owner: root
+    group: root
+    mode: "0644"
+  when: caddy_systemd_capabilities_enabled | bool
+  notify: "restart caddy"
+  tags: ["config"]
+
+- name: Remove systemd capabilities override when disabled
+  ansible.builtin.file:
+    path: /etc/systemd/system/caddy.service.d/override.conf
+    state: absent
+  when: not (caddy_systemd_capabilities_enabled | bool)
+  notify: "restart caddy"
+  tags: ["config"]
+
 - name: Ensure Caddy directories exist
   ansible.builtin.file:
     path: "{{ item }}"
