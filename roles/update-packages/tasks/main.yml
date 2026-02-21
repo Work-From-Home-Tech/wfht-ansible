@@ -5,10 +5,9 @@
     cache_valid_time: "{{ update_cache_valid_time }}"
   when: ansible_os_family == "Debian"
 
-- name: Update packages (Debian/Ubuntu)
+- name: Update all packages (Debian/Ubuntu)
   apt:
-    name: "{{ packages }}"
-    state: latest
+    upgrade: dist
   when: ansible_os_family == "Debian"
 
 - name: Autoremove unused packages (Debian/Ubuntu)
@@ -30,9 +29,9 @@
     update_cache: yes
   when: ansible_os_family == "RedHat"
 
-- name: Update packages (RedHat)
+- name: Update all packages (RedHat)
   dnf:
-    name: "{{ packages }}"
+    name: '*'
     state: latest
   when: ansible_os_family == "RedHat"
 

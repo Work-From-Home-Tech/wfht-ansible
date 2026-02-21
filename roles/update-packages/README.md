@@ -14,7 +14,6 @@ This Ansible role updates system packages on Debian/Ubuntu and RedHat-based syst
 
 | Variable | Description | Default |
 |----------|-------------|---------|
-| `packages` | List of packages to install/update | `['python3-pip', 'git']` |
 | `update_cache_valid_time` | How long (in seconds) the apt cache is considered valid | `3600` |
 | `autoremove` | Whether to remove unused packages | `true` |
 | `autoclean` | Whether to clean package cache (Debian/Ubuntu only) | `true` |
@@ -25,7 +24,6 @@ None
 
 ## Example Playbook
 
-Basic usage:
 ```yaml
 - hosts: servers
   become: true
@@ -33,18 +31,13 @@ Basic usage:
     - role: update-packages
 ```
 
-Customizing packages to update:
+Disable autoremove and autoclean:
 ```yaml
 - hosts: servers
   become: true
   vars:
-    packages:
-      - python3-pip
-      - git
-      - curl
-      - vim
-      - htop
     autoremove: false
+    autoclean: false
   roles:
     - role: update-packages
 ```
@@ -57,8 +50,8 @@ The role performs the following:
    - On Debian/Ubuntu: `apt update`
    - On RedHat: `dnf makecache`
 
-2. Updates specified packages to latest versions:
-   - On Debian/Ubuntu: `apt upgrade`
+2. Upgrades all installed packages to latest versions:
+   - On Debian/Ubuntu: `apt dist-upgrade`
    - On RedHat: `dnf update`
 
 3. Performs cleanup operations (if enabled):
@@ -68,7 +61,7 @@ The role performs the following:
 ## Usage Notes
 
 - This role is often used as a first step in playbooks to ensure systems are up-to-date before installing additional software
-- The default package list includes `python3-pip` and `git`, which are commonly needed for other roles
+- The role upgrades all installed packages to their latest versions
 - The role is designed to be idempotent and can be run repeatedly without issues
 
 ## License
