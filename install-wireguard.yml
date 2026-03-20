@@ -1,0 +1,9 @@
+---
+- name: WireGuard install test
+  hosts: all
+
+  vars:
+    roles_path: "{{ playbook_dir }}/roles"
+
+  roles:
+  - role: install-wireguard
