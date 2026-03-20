@@ -41,6 +41,7 @@ update_packages.yml - Updates all packages on Ubuntu and Red Hat nodes.
 - [install-golang](roles/install-golang/README.md) - Go language installation
 - [install-mkdocs](roles/install-mkdocs/README.md) - MkDocs documentation tool
 - [install-caddy](roles/install-caddy/README.md) - Caddy web server
+- [install-homebrew](roles/install-homebrew/README.md) - Homebrew package manager installation
 
 ### System Management
 - [update-packages](roles/update-packages/README.md) - System package updates

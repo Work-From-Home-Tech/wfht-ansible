@@ -1,0 +1,95 @@
+---
+# tasks file for install-wireguard
+- name: Include variables for WireGuard installation
+  include_vars: "{{ role_path }}/vars/main.yml"
+
+- name: Install WireGuard on Ubuntu/Debian
+  block:
+    - name: Update the apt cache
+      apt:
+        update_cache: yes
+        cache_valid_time: 86400
+
+    - name: Install pre-requisites
+      apt:
+        pkg: "{{ prereqs_debian }}"
+        state: present
+
+    - name: Install WireGuard packages
+      apt:
+        pkg: "{{ wireguard_packages_debian }}"
+        state: present
+
+    - name: Enable IP forwarding
+      lineinfile:
+        path: /etc/sysctl.conf
+        regexp: '^#?net.ipv4.ip_forward='
+        line: 'net.ipv4.ip_forward=1'
+      notify: reload sysctl
+
+  become: true
+  when: ansible_os_family == "Debian"
+
+- name: Install WireGuard on CentOS/RHEL
+  block:
+    - name: Install pre-requisites
+      dnf:
+        pkg: "{{ prereqs_rhel }}"
+        state: present
+
+    - name: Install WireGuard packages
+      dnf:
+        pkg: "{{ wireguard_packages_rhel }}"
+        state: present
+
+    - name: Enable IP forwarding
+      lineinfile:
+        path: /etc/sysctl.conf
+        regexp: '^#?net.ipv4.ip_forward='
+        line: 'net.ipv4.ip_forward=1'
+      notify: reload sysctl
+
+  become: true
+  when: ansible_os_family == "RedHat"
+
+- name: Create WireGuard configuration directory
+  file:
+    path: /etc/wireguard
+    state: directory
+    mode: '0600'
+  become: true
+
+- name: Generate WireGuard private key if not provided
+  shell: wg genkey
+  register: wireguard_generated_private_key
+  when: wireguard_private_key == ""
+  become: true
+
+- name: Set private key fact
+  set_fact:
+    wireguard_private_key: "{{ wireguard_generated_private_key.stdout if wireguard_private_key == '' else wireguard_private_key }}"
+
+- name: Generate WireGuard public key if not provided
+  shell: echo "{{ wireguard_private_key }}" | wg pubkey
+  register: wireguard_generated_public_key
+  when: wireguard_public_key == ""
+  become: true
+
+- name: Set public key fact
+  set_fact:
+    wireguard_public_key: "{{ wireguard_generated_public_key.stdout if wireguard_public_key == '' else wireguard_public_key }}"
+
+- name: Create WireGuard configuration file
+  template:
+    src: wg0.conf.j2
+    dest: "/etc/wireguard/{{ wireguard_interface }}.conf"
+    mode: '0600'
+  become: true
+  notify: restart wireguard
+
+- name: Start and enable WireGuard service
+  systemd:
+    name: "wg-quick@{{ wireguard_interface }}"
+    state: started
+    enabled: yes
+  become: true

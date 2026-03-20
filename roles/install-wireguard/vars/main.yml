@@ -1,0 +1,19 @@
+---
+# vars file for install-wireguard
+wireguard_packages_debian:
+  - wireguard
+  - wireguard-tools
+
+wireguard_packages_rhel:
+  - wireguard-tools
+  - wireguard-dkms
+
+prereqs_debian:
+  - curl
+  - gnupg
+  - software-properties-common
+
+prereqs_rhel:
+  - curl
+  - gnupg2
+  - epel-release

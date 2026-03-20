@@ -1,0 +1,26 @@
+---
+- name: Install prerequisites for Homebrew on RHEL/CentOS/Fedora
+  package:
+    name:
+      - make
+      - curl
+      - file
+      - git
+      - gcc
+    state: present
+  become: true
+
+- name: Install Homebrew using the official installer
+  shell: /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+  args:
+    creates: /home/linuxbrew/.linuxbrew/bin/brew
+  become: true
+
+- name: Add Homebrew to PATH for all users
+  copy:
+    dest: /etc/profile.d/brew.sh
+    content: |
+      # Set PATH, MANPATH, etc., for Homebrew.
+      eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)"
+    mode: '0644'
+  become: true

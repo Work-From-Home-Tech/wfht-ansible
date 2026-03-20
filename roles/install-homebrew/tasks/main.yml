@@ -1,0 +1,13 @@
+---
+- name: Include OS-specific tasks
+  include_tasks: "{{ ansible_os_family }}.yml"
+
+- name: Verify homebrew installation
+  command: brew --version
+  register: homebrew_version
+  changed_when: false
+  failed_when: homebrew_version.rc != 0
+
+- name: Display homebrew version
+  debug:
+    msg: "Homebrew installed successfully: {{ homebrew_version.stdout }}"

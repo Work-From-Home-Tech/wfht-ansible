@@ -1,0 +1,6 @@
+---
+- name: WireGuard install test
+  hosts: all
+
+  roles:
+  - role: install-wireguard

@@ -1,0 +1,26 @@
+---
+- name: Install prerequisites for Homebrew on Debian/Ubuntu
+  apt:
+    name:
+      - build-essential
+      - curl
+      - file
+      - git
+    state: present
+    update_cache: yes
+  become: true
+
+- name: Install Homebrew using the official installer
+  shell: /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+  args:
+    creates: /home/linuxbrew/.linuxbrew/bin/brew
+  become: true
+
+- name: Add Homebrew to PATH for all users
+  copy:
+    dest: /etc/profile.d/brew.sh
+    content: |
+      # Set PATH, MANPATH, etc., for Homebrew.
+      eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)"
+    mode: '0644'
+  become: true
